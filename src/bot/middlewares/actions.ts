@@ -1,9 +1,9 @@
-import BotAuthAction from "@/bot/actions/botAuth.action";
-import BotTestAction from "@/bot/actions/test.bot.action";
+import AuthBotMiddlewares from "@/bot/middlewares/auth.bot.middlewares";
+import BotTestAction from "@/bot/middlewares/test.bot.middlewares";
 
 
 export default function initActions (bot) {
-  const authActions = new BotAuthAction()
+  const authActions = new AuthBotMiddlewares()
   const testActions = new BotTestAction()
 
   bot.action("register_action", authActions.register);

@@ -34,6 +34,7 @@
     "swagger-jsdoc": "^6.0.0",
     "swagger-ui-express": "^4.1.6",
     "telegraf": "^4.8.3",
+    "telegraf-session-local": "^2.1.0",
     "typeorm": "^0.2.34",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5"
