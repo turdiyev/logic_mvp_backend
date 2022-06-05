@@ -1,5 +1,11 @@
-export interface User {
+export interface Question {
   id: number;
-  email: string;
-  password: string;
+  number: string;
+  image: string;
+  correct_answer: Options;
+  origin_test_name: string;
+}
+
+export enum Options {
+  A = "a", B = "b", C = "c", D = "d"
 }

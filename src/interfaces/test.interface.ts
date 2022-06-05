@@ -1,11 +1,5 @@
-export interface Question {
+export interface Test {
   id: number;
-  number: string;
-  image: string;
-  correct_answer: Options;
-  origin_test_name: string;
-}
-
-export enum Options {
-  A = "a", B = "b", C = "c", D = "d"
+  user_id: number;
+  title: string;
 }

@@ -5,24 +5,24 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn
+  UpdateDateColumn, ManyToOne, RelationId
 } from "typeorm";
-import { Options, Question } from "@interfaces/questions.interface";
+import { Test } from "@interfaces/test.interface";
+import { UserEntity } from "@entities/users.entity";
 
 @Entity()
-export class Questions extends BaseEntity implements Question {
+export class Tests extends BaseEntity implements Test {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  @IsNotEmpty()
-  number: string;
-
-  @Column({ type: "enum", enum: Options })
-  correct_answer: Options;
+  @ManyToOne((type) => UserEntity, (user) => user.tests)
+  user: UserEntity
 
   @Column()
-  origin_test_name: string;
+  title: string;
+
+  @RelationId((test: Tests) => test.user)
+  user_id: number;
 
   @Column()
   image: string;
