@@ -1,6 +1,6 @@
-export interface Question {
+export interface Questions {
   id: number;
-  number: string;
+  number: number;
   image: string;
   correct_answer: Options;
   origin_test_name: string;

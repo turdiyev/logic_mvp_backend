@@ -103,13 +103,46 @@ paths:
         500:
           description: 'Server Error'
 
+
+
+  # [GET] tests
+  /tests:
+
+    # [POST] tests
+    post:
+      tags:
+        - tests
+      summary: Add Test
+      operationId: "uploadFiles"
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: photos
+          in: formData
+          description: test Data
+          required: true
+          type: file
+      responses:
+        201:
+          description: 'Created'
+        400:
+          description: 'Bad Request'
+        409:
+          description: 'Conflict'
+        500:
+          description: 'Server Error'
+
+
+
+
+
 # definitions
 definitions:
   users:
     type: object
     required:
-        - email
-        - password
+      - email
+      - password
     properties:
       email:
         type: string
@@ -117,6 +150,22 @@ definitions:
       password:
         type: string
         description: user Password
+  tests:
+    type: object
+    required:
+      - user_id
+      - title
+      - photos
+    properties:
+      user_id:
+        type: string
+        description: user id
+      title:
+        type: string
+        description: title
+      photos:
+        type: files
+        description: photos
 
 schemes:
  - https

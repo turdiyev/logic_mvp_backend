@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn, ManyToOne, RelationId
 } from "typeorm";
-import { Test } from "@interfaces/test.interface";
+import { Tests as Test } from "@interfaces/test.interface";
 import { UserEntity } from "@entities/users.entity";
 
 @Entity()

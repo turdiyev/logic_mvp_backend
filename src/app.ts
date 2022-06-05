@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
-import express from 'express';
+import express from "express";
 import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
@@ -53,6 +53,7 @@ class App {
     this.app.use(morgan(LOG_FORMAT, { stream }));
     this.app.use(cors({ origin: ORIGIN, credentials: CREDENTIALS }));
     this.app.use(hpp());
+    this.app.use(express.static('uploads'));
     this.app.use(helmet());
     this.app.use(compression());
     this.app.use(express.json());

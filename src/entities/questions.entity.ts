@@ -7,17 +7,17 @@ import {
   CreateDateColumn,
   UpdateDateColumn, ManyToOne, OneToMany
 } from "typeorm";
-import { Options, Question } from "@interfaces/questions.interface";
+import { Options, Questions as IQuestions } from "@interfaces/questions.interface";
 import { UserEntity } from "@entities/users.entity";
 
 @Entity()
-export class Questions extends BaseEntity implements Question {
+export class Questions extends BaseEntity implements IQuestions {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   @IsNotEmpty()
-  number: string;
+  number: number;
 
   @Column({ type: "enum", enum: Options })
   correct_answer: Options;
