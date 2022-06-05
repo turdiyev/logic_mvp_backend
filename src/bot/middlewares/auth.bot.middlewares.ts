@@ -12,9 +12,9 @@ export default class AuthBotMiddlewares {
       if (ctx.from.is_bot) {
         await ctx.reply("Afsuski botlar uchun kirish huquqi yo'q");
         return;
-       }
+      }
 
-      const sessionUser = ctx.session?.currentUser as User;
+      const sessionUser: User = ctx.session?.currentUser;
 
       if (sessionUser?.id) {
         await ctx.reply(`Welcome, ${getUserDisplayName(sessionUser)}`, Markup.inlineKeyboard([
@@ -38,7 +38,7 @@ export default class AuthBotMiddlewares {
     // console.log("register action -- ", from, JSON.stringify(ctx));
     const userData: CreateUserDto = {
       telegram_user_id: from.id,
-      username: from.username || String(ctx.message.from.id),
+      username: from.username || String(from.id),
       first_name: from.first_name || "",
       last_name: from.last_name || "",
       json_data: JSON.stringify(from),
@@ -46,6 +46,7 @@ export default class AuthBotMiddlewares {
     };
     const createUserData: User = await this.authController.signInOrUp(userData);
     ctx.session.currentUser = createUserData;
+
     ctx.reply(`${createUserData.first_name || createUserData.username}. You are registered \n
 Your id is: 123132132\n
 Your balanse is: 20 000 so’m`, Markup.inlineKeyboard([

@@ -4,6 +4,8 @@ import { MyContext } from "@/bot/bot.interfaces";
 export default class BotTestAction {
 
   async startTest(ctx: MyContext, next) {
+    await ctx.answerCbQuery()
+
     ctx.replyWithPhoto({ url: "https://picsum.photos/200/300/?random" }, {
       caption: `*1\\-savol:* _\\(savol kode: *XDF345*\\)_`,
       parse_mode: 'MarkdownV2',
@@ -14,7 +16,6 @@ export default class BotTestAction {
         Markup.button.callback("D", "a_start_test_action")
       ])
     })
-    ctx.answerCbQuery()
 
   }
 
