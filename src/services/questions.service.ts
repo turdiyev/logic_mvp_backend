@@ -1,8 +1,8 @@
-import { EntityRepository, Repository } from 'typeorm';
-import { Questions as QuestionEntity } from '@entities/questions.entity';
-import { HttpException } from '@exceptions/HttpException';
-import { Questions } from '@interfaces/questions.interface';
-import { isEmpty } from '@utils/util';
+import { EntityRepository, Repository } from "typeorm";
+import { QuestionEntity as QuestionEntity } from "@entities/questions.entity";
+import { HttpException } from "@exceptions/HttpException";
+import { Questions } from "@interfaces/questions.interface";
+import { isEmpty } from "@utils/util";
 import { CreateQuestionsDto } from "@dtos/questions.dto";
 
 @EntityRepository()
@@ -12,6 +12,7 @@ class QuestionsService extends Repository<QuestionEntity> {
     return questions;
   }
 
+
   public async findQuestionById(questionId: number): Promise<Questions> {
     if (isEmpty(questionId)) throw new HttpException(400, "You're not questionId");
 
@@ -19,6 +20,16 @@ class QuestionsService extends Repository<QuestionEntity> {
     if (!findQuestion) throw new HttpException(409, "You're not question");
 
     return findQuestion;
+  }
+
+  public async getRandomQuestion(questionNumber: number): Promise<Questions> {
+
+    const query = await QuestionEntity.createQueryBuilder()
+      .where('number = :number', {number: questionNumber})
+      .orderBy("random()")
+      .limit(1);
+
+    return await query.getOne();
   }
 
   public async createQuestion(questionData: CreateQuestionsDto): Promise<Questions> {

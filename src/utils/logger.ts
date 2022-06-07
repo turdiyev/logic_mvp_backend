@@ -21,7 +21,7 @@ const logFormat = winston.format.printf(({ timestamp, level, message }) => `${ti
 const logger = winston.createLogger({
   format: winston.format.combine(
     winston.format.timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss',
+      format: 'DD.MM.YYYY HH:mm:ss',
     }),
     logFormat,
   ),

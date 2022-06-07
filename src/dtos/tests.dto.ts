@@ -1,10 +1,10 @@
-import { IsEmail, IsJSON, IsNumber, isNumberString, IsString } from "class-validator";
-import { User } from "@interfaces/users.interface";
+import { IsEmail, IsEnum, IsJSON, IsNumber, isNumberString, IsString } from "class-validator";
+import { Status } from "@entities/test.entity";
 
 export class CreateTestsDto {
-  @IsNumber()
-  public user_id: number;
+  @IsEnum(Status)
+  public status: Status;
 
   @IsString()
-  public title?: string;
+  public name: string;
 }

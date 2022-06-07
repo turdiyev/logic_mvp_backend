@@ -9,5 +9,5 @@ export default function initActions (bot) {
   bot.action("register_action", authActions.register);
 
   bot.action("start_test_action", testActions.startTest)
-  bot.action("a_start_test_action", testActions.startTest)
+  bot.action(/^([a-z])_option_selected_action$/, testActions.nextQuestion)
 }

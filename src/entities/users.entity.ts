@@ -9,10 +9,10 @@ import {
   UpdateDateColumn, OneToMany, JoinColumn
 } from "typeorm";
 import { User } from "@interfaces/users.interface";
-import { Questions } from "@entities/questions.entity";
-import { Tests } from "@entities/test.entity";
+import { QuestionEntity } from "@entities/questions.entity";
+import { TestEntity } from "@entities/test.entity";
 
-@Entity()
+@Entity('users')
 export class UserEntity extends BaseEntity implements User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -52,11 +52,11 @@ export class UserEntity extends BaseEntity implements User {
   @Column({ type: "json", nullable: true })
   json_data: string | object;
 
-  @OneToMany((type) => Questions, question => question.user)
+  @OneToMany(() => QuestionEntity, question => question.user)
   @JoinColumn()
-  questions: Questions[];
+  questions: QuestionEntity[];
 
-  @OneToMany((type) => Tests, test => test.user)
+  @OneToMany(() => TestEntity, test => test.user)
   @JoinColumn()
-  tests: Questions[];
+  tests: QuestionEntity[];
 }

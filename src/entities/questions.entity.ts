@@ -5,13 +5,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, ManyToOne, OneToMany
+  UpdateDateColumn,  OneToMany
 } from "typeorm";
 import { Options, Questions as IQuestions } from "@interfaces/questions.interface";
 import { UserEntity } from "@entities/users.entity";
 
-@Entity()
-export class Questions extends BaseEntity implements IQuestions {
+@Entity('questions')
+export class QuestionEntity extends BaseEntity implements IQuestions {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -36,6 +36,6 @@ export class Questions extends BaseEntity implements IQuestions {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany((type) => UserEntity, (user) => user.questions)
-  user: UserEntity[]
+  @OneToMany(() => UserEntity, (user) => user.questions)
+  user: UserEntity;
 }

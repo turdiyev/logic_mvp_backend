@@ -19,7 +19,7 @@ class QuestionsRoute implements Routes {
   private initializeRoutes() {
     this.router.get(`${this.path}`, this.questionsController.getQuestions);
     this.router.get(`${this.path}/:id(\\d+)`, this.questionsController.getQuestionById);
-    this.router.post(`${this.path}`, upload.array('photos', 15), this.questionsController.createQuestion);
+    this.router.post(`${this.path}`, upload.array('photos', 40), this.questionsController.createQuestion);
     this.router.put(`${this.path}/:id(\\d+)`, validationMiddleware(CreateQuestionsDto, "body", true), this.questionsController.updateQuestion);
     this.router.delete(`${this.path}/:id(\\d+)`, this.questionsController.deleteQuestion);
   }

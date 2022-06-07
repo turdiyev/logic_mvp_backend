@@ -30,6 +30,9 @@ class QuestionsController {
   public createQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const questions =[]
+
+      console.log('TESTS : files --- ', req.files)
+
       for (const file in req?.files) {
         const fileItem:  Express.Multer.File = req.files[file];
         const originalName = fileItem.originalname;
@@ -40,10 +43,12 @@ class QuestionsController {
           image: fileItem.filename,
           origin_test_name: originalName
         }
+        // console.log('TESTS : dto files --- ', JSON.stringify(questionData, undefined,2))
+
         const createQuestionData: Questions = await this.questionService.createQuestion(questionData);
         questions.push(createQuestionData);
       }
-      console.log('TESTS : createQuestion --- ', JSON.stringify(questions, undefined,2), req['photos'])
+      // console.log('TESTS : createQuestion --- ', JSON.stringify(questions, undefined,2), req['photos'])
 
 
       res.status(201).json({ data: questions, message: 'created' });

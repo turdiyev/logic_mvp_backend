@@ -1,5 +1,9 @@
+import { Questions } from "@interfaces/questions.interface";
+import { Status } from "@entities/test.entity";
+
 export interface Tests {
   id: number;
-  user_id: number;
-  title: string;
+  name: string;
+  status: Status;
+  questions?: Questions[];
 }

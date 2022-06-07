@@ -35,7 +35,6 @@ export default class AuthBotMiddlewares {
   public register = async (ctx: MyContext, next) => {
     // console.log("register -- ", ctx.from);
     const from = ctx.from;
-    // console.log("register action -- ", from, JSON.stringify(ctx));
     const userData: CreateUserDto = {
       telegram_user_id: from.id,
       username: from.username || String(from.id),
