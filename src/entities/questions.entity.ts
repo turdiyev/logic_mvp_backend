@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,  OneToMany
 } from "typeorm";
-import { Options, Questions as IQuestions } from "@interfaces/questions.interface";
+import { OptionsEnum, Questions as IQuestions, TypeEnum } from "@interfaces/questions.interface";
 import { UserEntity } from "@entities/users.entity";
 
 @Entity('questions')
@@ -19,8 +19,11 @@ export class QuestionEntity extends BaseEntity implements IQuestions {
   @IsNotEmpty()
   number: number;
 
-  @Column({ type: "enum", enum: Options })
-  correct_answer: Options;
+  @Column({ type: "enum", enum: OptionsEnum })
+  correct_answer: OptionsEnum;
+
+  @Column({ type: "enum", enum: TypeEnum, default: TypeEnum.PAID })
+  type: TypeEnum;
 
   @Column()
   origin_test_name: string;

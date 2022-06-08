@@ -25,9 +25,10 @@ class QuestionsService extends Repository<QuestionEntity> {
   public async getRandomQuestion(questionNumber: number): Promise<Questions> {
 
     const query = await QuestionEntity.createQueryBuilder()
-      .where('number = :number', {number: questionNumber})
+      .where("number = :number", { number: questionNumber })
       .orderBy("random()")
       .limit(1);
+    if (await query.getCount() === 0) throw new HttpException(404, "Question not found");
 
     return await query.getOne();
   }

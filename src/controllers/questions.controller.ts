@@ -1,7 +1,7 @@
-import { NextFunction, Request, Response } from 'express';
-import { CreateQuestionsDto } from '@dtos/questions.dto';
-import { Options, Questions } from "@interfaces/questions.interface";
-import questionService from '@services/questions.service';
+import { NextFunction, Request, Response } from "express";
+import { CreateQuestionsDto } from "@dtos/questions.dto";
+import { OptionsEnum, Questions, TypeEnum } from "@interfaces/questions.interface";
+import questionService from "@services/questions.service";
 
 class QuestionsController {
   public questionService = new questionService();
@@ -10,7 +10,7 @@ class QuestionsController {
     try {
       const findAllQuestionsData: Questions[] = await this.questionService.findAllQuestion();
 
-      res.status(200).json({ data: findAllQuestionsData, message: 'findAll' });
+      res.status(200).json({ data: findAllQuestionsData, message: "findAll" });
     } catch (error) {
       next(error);
     }
@@ -21,7 +21,7 @@ class QuestionsController {
       const questionId = Number(req.params.id);
       const findOneQuestionData: Questions = await this.questionService.findQuestionById(questionId);
 
-      res.status(200).json({ data: findOneQuestionData, message: 'findOne' });
+      res.status(200).json({ data: findOneQuestionData, message: "findOne" });
     } catch (error) {
       next(error);
     }
@@ -29,29 +29,27 @@ class QuestionsController {
 
   public createQuestion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const questions =[]
-
-      console.log('TESTS : files --- ', req.files)
+      const questions = [];
 
       for (const file in req?.files) {
-        const fileItem:  Express.Multer.File = req.files[file];
+        const fileItem: Express.Multer.File = req.files[file];
+        const isSample = fileItem.originalname.includes("sample");
         const originalName = fileItem.originalname;
-        const chunks = originalName.split('_')
-        const questionData:CreateQuestionsDto = {
-          number:   Number(chunks[1]),
-          correct_answer: chunks[2] as Options,
+        const chunks = originalName.replace("sample_", "").split("_");
+        const questionData: CreateQuestionsDto = {
+          number: Number(chunks[1]),
+          correct_answer: chunks[2] as OptionsEnum,
           image: fileItem.filename,
+          type: isSample ? TypeEnum.SAMPLE : TypeEnum.PAID,
           origin_test_name: originalName
-        }
-        // console.log('TESTS : dto files --- ', JSON.stringify(questionData, undefined,2))
+        };
 
         const createQuestionData: Questions = await this.questionService.createQuestion(questionData);
         questions.push(createQuestionData);
       }
-      // console.log('TESTS : createQuestion --- ', JSON.stringify(questions, undefined,2), req['photos'])
 
 
-      res.status(201).json({ data: questions, message: 'created' });
+      res.status(201).json({ data: questions, message: "created" });
     } catch (error) {
       next(error);
     }
@@ -63,7 +61,7 @@ class QuestionsController {
       const questionData: CreateQuestionsDto = req.body;
       const updateQuestionData: Questions = await this.questionService.updateQuestion(questionId, questionData);
 
-      res.status(200).json({ data: updateQuestionData, message: 'updated' });
+      res.status(200).json({ data: updateQuestionData, message: "updated" });
     } catch (error) {
       next(error);
     }
@@ -74,7 +72,7 @@ class QuestionsController {
       const questionId = Number(req.params.id);
       const deleteQuestionData: Questions = await this.questionService.deleteQuestion(questionId);
 
-      res.status(200).json({ data: deleteQuestionData, message: 'deleted' });
+      res.status(200).json({ data: deleteQuestionData, message: "deleted" });
     } catch (error) {
       next(error);
     }

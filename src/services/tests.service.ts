@@ -40,6 +40,8 @@ class TestService extends Repository<TestEntity> {
     const questions = [];
     for await   (const [ind] of [...Array(questionCount).entries()]) {
       const item = await this.questionService.getRandomQuestion(ind + 1);
+      if (isEmpty(item)) throw new HttpException(400, "Empty questions");
+
       questions.push(item);
     }
     if (isEmpty(questions)) throw new HttpException(400, "Empty questions");

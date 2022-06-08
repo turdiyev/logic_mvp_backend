@@ -9,22 +9,23 @@ import {
 import { Tests as Test } from "@interfaces/test.interface";
 import { UserEntity } from "@entities/users.entity";
 import { QuestionEntity } from "@entities/questions.entity";
+import { ResultEntity } from "@entities/result.entity";
 
 export enum Status {
   PENDING = "PENDING",
   COMPLETED = "COMPLETED"
 }
 
-@Entity('tests')
+@Entity("tests")
 export class TestEntity extends BaseEntity implements Test {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({type:'uuid', unique:true})
-  @Generated('uuid')
+  @Column({ type: "uuid", unique: true })
+  @Generated("uuid")
   name: string;
 
-  @Column({ type: "enum", enum: Status, default: Status.PENDING})
+  @Column({ type: "enum", enum: Status, default: Status.PENDING })
   status: Status;
 
   @Column()
@@ -39,6 +40,8 @@ export class TestEntity extends BaseEntity implements Test {
   user: UserEntity;
 
   @ManyToMany(() => QuestionEntity)
-  @JoinTable()
+  @JoinTable({
+    name: "results",
+  })
   questions: QuestionEntity[];
 }
