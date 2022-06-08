@@ -8,6 +8,7 @@ import { isEmpty } from "@utils/util";
 import QuestionsService from "@services/questions.service";
 import { Questions } from "@interfaces/questions.interface";
 import { QuestionEntity as QuestionEntity } from "@entities/questions.entity";
+import { User } from "@interfaces/users.interface";
 
 @EntityRepository()
 class TestService extends Repository<TestEntity> {
@@ -35,7 +36,7 @@ class TestService extends Repository<TestEntity> {
     return createTestData;
   }
 
-  async generateTest(questionCount = 30): Promise<Tests> {
+  async generateTest(user: User, questionCount = 30): Promise<Tests> {
     // if (isEmpty(testData)) throw new HttpException(400, "You're not testData");
     const questions = [];
     for await   (const [ind] of [...Array(questionCount).entries()]) {
@@ -45,9 +46,9 @@ class TestService extends Repository<TestEntity> {
       questions.push(item);
     }
     if (isEmpty(questions)) throw new HttpException(400, "Empty questions");
-
     const data = {
       status: Status.PENDING,
+      user,
       questions
     };
     const createQuestionData: Tests = await TestEntity.create(data).save();

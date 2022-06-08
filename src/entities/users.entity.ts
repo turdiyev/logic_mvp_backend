@@ -57,6 +57,5 @@ export class UserEntity extends BaseEntity implements User {
   questions: QuestionEntity[];
 
   @OneToMany(() => TestEntity, test => test.user)
-  @JoinColumn()
-  tests: QuestionEntity[];
+  tests: TestEntity[];
 }

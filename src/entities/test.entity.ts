@@ -4,12 +4,11 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, ManyToOne, ManyToMany, JoinTable, Generated
+  UpdateDateColumn, ManyToOne, ManyToMany, JoinTable, Generated, JoinColumn
 } from "typeorm";
 import { Tests as Test } from "@interfaces/test.interface";
 import { UserEntity } from "@entities/users.entity";
 import { QuestionEntity } from "@entities/questions.entity";
-import { ResultEntity } from "@entities/result.entity";
 
 export enum Status {
   PENDING = "PENDING",
@@ -39,9 +38,10 @@ export class TestEntity extends BaseEntity implements Test {
   @ManyToOne(() => UserEntity, (user) => user.tests)
   user: UserEntity;
 
+
   @ManyToMany(() => QuestionEntity)
   @JoinTable({
-    name: "results",
+    name: "results"
   })
   questions: QuestionEntity[];
 }

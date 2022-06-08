@@ -2,13 +2,14 @@ import { NextFunction, Request, Response } from 'express';
 import { CreateTestsDto } from '@dtos/tests.dto';
 import testsService from "@services/tests.service";
 import { Tests } from "@interfaces/test.interface";
+import { User } from "@interfaces/users.interface";
 
 class TestsController {
   public testService = new testsService();
 
-  public generateTest = async (questionsCount?: number): Promise<Tests> => {
+  public generateTest = async (user:User,questionsCount?: number): Promise<Tests> => {
     // try {
-      const generatedTest: Tests = await this.testService.generateTest(questionsCount);
+      const generatedTest: Tests = await this.testService.generateTest(user,questionsCount);
 
       return generatedTest
     // } catch (error) {
