@@ -1,4 +1,3 @@
-import { hash } from "bcrypt";
 import { EntityRepository, Repository } from "typeorm";
 import { CreateTestsDto } from "@dtos/tests.dto";
 import { Status, TestEntity as TestEntity } from "@entities/test.entity";
@@ -6,9 +5,9 @@ import { HttpException } from "@exceptions/HttpException";
 import { Tests } from "@interfaces/test.interface";
 import { isEmpty } from "@utils/util";
 import QuestionsService from "@services/questions.service";
-import { Questions } from "@interfaces/questions.interface";
-import { QuestionEntity as QuestionEntity } from "@entities/questions.entity";
 import { User } from "@interfaces/users.interface";
+import moment from "moment";
+import { ResultEntity } from "@entities/result.entity";
 
 @EntityRepository()
 class TestService extends Repository<TestEntity> {
@@ -46,14 +45,33 @@ class TestService extends Repository<TestEntity> {
       questions.push(item);
     }
     if (isEmpty(questions)) throw new HttpException(400, "Empty questions");
+
     const data = {
       status: Status.PENDING,
       user,
       questions
     };
-    const createQuestionData: Tests = await TestEntity.create(data).save();
 
-    return createQuestionData;
+    return await TestEntity.create(data).save();
+  }
+
+  async completeTest(testId: number): Promise<any> {
+    await TestEntity.update(testId, {
+      status: Status.COMPLETED,
+      completedAt: moment().format()
+    });
+    // const test = await TestEntity.findOne(testId, {
+    //   relations:['questions', 'results']
+    // });
+    const test = await ResultEntity.createQueryBuilder('r')
+      // .select('res.selected_option','selected_option')
+      .innerJoinAndSelect('r.test','t')
+      .innerJoinAndSelect('r.question','q')
+      // .innerJoin('questions', 'q', 'r.questions_id = q.id')
+      // .where('t.id = :testId',{testId})
+      .getMany()
+
+    return test;
   }
 
   public async updateTest(testId: number, testData: CreateTestsDto): Promise<Tests> {

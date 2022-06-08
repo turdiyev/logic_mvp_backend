@@ -4,7 +4,7 @@ import LocalSession from "telegraf-session-local";
 const localSession = new LocalSession();
 
 export default function initMiddlewares(bot) {
-  bot.use(Telegraf.log());
+  // bot.use(Telegraf.log());
   bot.use(localSession.middleware());
   // bot.use(async (ctx, next) => {
   //   console.time(`Processing update ${ctx.update.update_id}`);

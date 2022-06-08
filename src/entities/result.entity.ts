@@ -4,22 +4,23 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, PrimaryColumn, OneToOne, JoinTable
+  UpdateDateColumn, PrimaryColumn, OneToOne, JoinTable, JoinColumn
 } from "typeorm";
 import { OptionsEnum } from "@interfaces/questions.interface";
 import { TestEntity } from "@entities/test.entity";
 import { QuestionEntity } from "@entities/questions.entity";
+import { Results } from "@interfaces/results.interface";
 
 @Entity("results")
-export class ResultEntity extends BaseEntity {
+export class ResultEntity extends BaseEntity implements Results{
   @PrimaryGeneratedColumn()
   id: number;
 
   @PrimaryColumn({ type: "int" })
-  tests_id: number;
+  test_id: number;
 
   @PrimaryColumn({ type: "int" })
-  questions_id: number;
+  question_id: number;
 
   @Column({ type: "enum", enum: OptionsEnum, nullable:true })
   selected_option: OptionsEnum;

@@ -1,20 +1,20 @@
 import { Markup } from "telegraf";
 import { MyContext } from "@/bot/bot.interfaces";
-import TestController from "@/bot/controller/test.controller";
+import TestController from "@/bot/controller/test.bot.controller";
 import { Tests } from "@interfaces/test.interface";
-import { Questions } from "@interfaces/questions.interface";
-import * as fs from "fs";
+import ResultsBotController from "@/bot/controller/results.bot.controller";
 
 export default class BotTestAction {
   public testController = new TestController();
+  public resultController = new ResultsBotController();
 
   public startTest = async (ctx: MyContext, next) => {
     // await ctx.answerCbQuery();
     try {
-      const test = await this.testController.generateTest(ctx.session.currentUser, 30);
+      const test = await this.testController.generateTest(ctx.session.currentUser, 1);
       ctx.answerCbQuery("Test boshlandi");
       ctx.session.curTest = test as Tests;
-      ctx.session.curQuestion = test.questions[0];
+      ctx.session.questionsQueue = test.questions.slice();
       this.nextQuestion(ctx, next);
 
 
@@ -25,16 +25,19 @@ export default class BotTestAction {
 
 
   public nextQuestion = async (ctx: MyContext, next: any) => {
-    const selection_option = ctx.callbackQuery.data[0];
+    const prev_selected_option = ctx.callbackQuery.data[0];
     // await ctx.answerCbQuery('sdfa adsfa fadsfad fasd');
-    console.log("next question  -- ", ctx.callbackQuery.data);
     const curTest = ctx.session.curTest;
     const questions = curTest.questions;
-    const question = ctx.session.curQuestion;
+    const questionsCount = questions.length;
+    const question = ctx.session.questionsQueue.shift();
+    console.log("next question:  -- ", ctx.callbackQuery.data, question?.number);
 
-    if (question?.number + 1 <= questions.length) {
-      const prevMsgId = ctx.callbackQuery.message.message_id;
-
+    if (question?.number <= questionsCount) {
+      if (questions[question.number - 2]) {
+        const prevQuestion = questions[question.number - 2];
+        await this.resultController.saveOptionToResultQuestion(curTest, prevQuestion, prev_selected_option);
+      }
       await ctx.replyWithPhoto({ source: `./uploads/${question.image}` }, {
         caption: `*${question.number}\\-savol:* _(savol kode: *${curTest.name}*_ \\/n ${question.image}`,
         parse_mode: "HTML",
@@ -45,13 +48,17 @@ export default class BotTestAction {
           Markup.button.callback("D", "d_option_selected_action")
         ])
       });
-      ctx.deleteMessage(prevMsgId);
-
-      //next question
-      ctx.session.curQuestion = questions[question?.number];
+      ctx.deleteMessage(ctx.callbackQuery.message.message_id);//del prev msg
     } else {
-      ctx.session.curQuestion = undefined;
-      ctx.replyWithMarkdownV2(`*Test Yakunlandi*\nTest kodi: *${curTest.id}*\nIshladi: ${ctx.session.currentUser.first_name}\n`);
+      if (questions[questionsCount - 1]) {
+        const lastQuestion = questions[questionsCount - 1];
+        await this.resultController.saveOptionToResultQuestion(curTest, lastQuestion, prev_selected_option);
+        const completedTest = await this.testController.completeTest(curTest.id);
+        console.log("completedTest --", completedTest);
+        // ctx.session.curQuestion = undefined;
+        // ctx.replyWithMarkdownV2(`*Test Yakunlandi*\nTest kodi: *${curTest.id}*\nIshladi: ${ctx.session.currentUser.first_name}\n`);
+      }
+
     }
   };
 
