@@ -3,30 +3,28 @@ import { MyContext } from "@/bot/bot.interfaces";
 import TestController from "@/bot/controller/test.bot.controller";
 import { Tests } from "@interfaces/test.interface";
 import ResultsBotController from "@/bot/controller/results.bot.controller";
-import { TestEntity } from "@entities/test.entity";
 import moment from "moment";
+import PdfController from "@/bot/controller/pdfController";
+import { TestWithStats } from "@services/tests.service";
 
-interface TestWithStats extends Tests {
-  stats?: { questionsCount: number; corrects: number; percentage: number };
-};
 export default class BotTestAction {
   public testController = new TestController();
   public resultController = new ResultsBotController();
+  public pdfController = new PdfController();
 
   public startTest = async (ctx: MyContext, next) => {
     // await ctx.answerCbQuery();
     try {
-      const test = await this.testController.generateTest(ctx.session.currentUser, 4);
+      const test = await this.testController.generateTest(ctx.session.currentUser, 3);
       ctx.answerCbQuery("Test boshlandi");
       ctx.session.curTest = test as Tests;
-      ctx.session.curTest.questions = test.results.map(r => r.question);
-      ctx.session.questionsQueue = ctx.session.curTest.questions.slice();
+      ctx.session.questionsQueue = test.results.map(r => r.question);
       this.nextQuestion(ctx, next);
 
 
     } catch (e) {
       console.log("Bot TestAction: startTest---", e);
-      ctx.reply(e.message);
+      ctx.answerCbQuery("👍 Tabriklaymiz. Siz hozirda bor test savollarini ishlab chiqdingiz.");
     }
   };
 
@@ -40,10 +38,8 @@ export default class BotTestAction {
       return;
     }
     ctx.answerCbQuery();
-    const questions = curTest.questions;
-    const questionsCount = questions.length;
+    const questionsCount = curTest.results.length;
     const question = ctx.session.questionsQueue.shift();
-    console.log("next question:  -- ", ctx.callbackQuery.data, question?.number, curTest);
 
     if (question?.number <= questionsCount) {
       await ctx.replyWithPhoto({ source: `./uploads/${question.image}` }, {
@@ -56,41 +52,46 @@ export default class BotTestAction {
           Markup.button.callback("D", "d_option_selected_action")
         ])
       });
-      ctx.deleteMessage(ctx.callbackQuery.message.message_id);//del prev msg
+      if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);//del prev msg
 
-      if (questions[question.number - 2]) {
-        const prevQuestion = questions[question.number - 2];
+      if (curTest.results[question.number - 2]?.question) {
+        const prevQuestion = curTest.results[question.number - 2].question;
         await this.resultController.saveOptionToResultQuestion(curTest, prevQuestion, prev_selected_option);
       }
     } else {
-      if (questions[questionsCount - 1]) {
-        const lastQuestion = questions[questionsCount - 1];
+      this.completeTest(ctx);
+    }
+  };
+
+
+  public completeTest = async (ctx: MyContext) => {
+    try {
+      const prev_selected_option = ctx.callbackQuery.data[0];
+      const curTest = ctx.session.curTest;
+      const results = curTest.results;
+      const count = curTest.results.length;
+
+      if (results[count - 1]?.question) {
+        const lastQuestion = results[count - 1].question;
         await this.resultController.saveOptionToResultQuestion(curTest, lastQuestion, prev_selected_option);
         const completedTest: TestWithStats = await this.testController.completeTest(curTest.id);
-        completedTest.stats = { questionsCount, corrects: 0, percentage: 0 };
-        completedTest.results.forEach((result) => {
-          if (result.selected_option === result.question.correct_answer) {
-            completedTest.stats.corrects += 1;
-          }
-        });
-        completedTest.stats.percentage = (completedTest.stats.corrects / questionsCount) * 100;
-        ctx.session.curTest = null;
+
+        ctx.session.curTest = completedTest;
         ctx.session.questionsQueue = [];
-        console.log("completed test -- ", completedTest);
-        // ctx.session.curQuestion = undefined;
-        ctx.replyWithHTML(
-          `<strong>Test Yakunlandi</strong>
-<strong>${questionsCount}</strong> ta savoldan <strong>${completedTest.stats.corrects}</strong> ta to'g'ri.
 
-<em>Javoblar</em>: <strong>${Math.round(completedTest.stats.corrects)} / ${questionsCount}%</strong>
+        ctx.replyWithHTML(`<strong>Test Yakunlandi</strong>
+
+<em>Javoblar</em>: <strong>${Math.round(completedTest.stats.corrects)} / ${count}</strong>
 <em>Foizda</em>: <strong>${Math.round(completedTest.stats.percentage)}%</strong>
-<em>Tugatilgan vaqt:</em> ${moment(curTest.completedAt).format('DD.MM.YYYY, hh:mm:ss')}
+<em>Tugatilgan vaqt:</em> ${moment(completedTest.completedAt).format("DD.MM.YYYY, hh:mm:ss")}
 <em>Test raqami:</em> ${curTest.id}
-<em>Ishladi:</em> ${ctx.session.currentUser.first_name}`);
-        ctx.deleteMessage(ctx.callbackQuery.message.message_id);
-
+<em>Ishladi:</em> ${ctx.session.currentUser.first_name}`, Markup.inlineKeyboard([
+          Markup.button.callback("Javobini ko'rish", "open_results")
+        ]));
+        if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);
       }
-
+    } catch (e) {
+      console.log("complete Test---", e);
     }
   };
 

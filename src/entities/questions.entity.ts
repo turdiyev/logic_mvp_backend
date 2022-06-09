@@ -43,4 +43,8 @@ export class QuestionEntity extends BaseEntity implements IQuestions {
 
   @OneToMany(() => UserEntity, (user) => user.questions)
   user: UserEntity;
+
+
+  @OneToMany(() => ResultEntity, (result) => result.question)
+  results: ResultEntity[];
 }

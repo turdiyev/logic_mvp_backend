@@ -34,7 +34,6 @@ export class ResultEntity extends BaseEntity implements Results {
   @Column({type:"integer"})
   test_id: number;
 
-
   @ManyToOne(() => QuestionEntity)
   @JoinColumn({ name: "question_id" })
   question: QuestionEntity;

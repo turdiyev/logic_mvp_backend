@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { CreateTestsDto } from '@dtos/tests.dto';
-import testsService from "@services/tests.service";
+import testsService, { TestWithStats } from "@services/tests.service";
 import { Tests } from "@interfaces/test.interface";
 import { User } from "@interfaces/users.interface";
 import resultsService from "@services/results.service";
@@ -14,11 +14,11 @@ class TestsBotController {
 
       return generatedTest
   };
-  public completeTest = async (testId:number): Promise<Tests> => {
-      const generatedTest: Tests = await this.testService.completeTest(testId);
+  public completeTest = async (testId:number): Promise<TestWithStats> => {
+      const completedTest: Tests = await this.testService.completeTest(testId);
       // const generatedTest: Tests = await this.resu.completeTest(testId);
 
-      return generatedTest
+      return completedTest
   };
 }
 

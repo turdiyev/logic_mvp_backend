@@ -4,6 +4,8 @@ import { HttpException } from "@exceptions/HttpException";
 import { Questions } from "@interfaces/questions.interface";
 import { isEmpty } from "@utils/util";
 import { CreateQuestionsDto } from "@dtos/questions.dto";
+import { User } from "@interfaces/users.interface";
+import { UserEntity } from "@entities/users.entity";
 
 @EntityRepository()
 class QuestionsService extends Repository<QuestionEntity> {
@@ -22,15 +24,29 @@ class QuestionsService extends Repository<QuestionEntity> {
     return findQuestion;
   }
 
-  public async getRandomQuestion(questionNumber: number): Promise<Questions> {
+  public async getRandomQuestion(questionNumber: number, user: User): Promise<Questions> {
+    try {
+      const randomQuestion = await QuestionEntity.createQueryBuilder("q")
+        .where("number = :number", { number: questionNumber })
+        .andWhere((qb) => {
+          const subQuery = qb
+            .subQuery()
+            .select("res.question_id")
+            .from(UserEntity, "usr")
+            .innerJoin("tests", "tst", "tst.user_id = usr.id")
+            .innerJoin("results", "res", "res.test_id = tst.id")
+            .getQuery();
+          return "q.id NOT IN " + subQuery;
+        })
+        .orderBy("random()")
+        .limit(1)
+        .getOne();
+      if (!randomQuestion) throw new Error("Question not found");
 
-    const query = await QuestionEntity.createQueryBuilder()
-      .where("number = :number", { number: questionNumber })
-      .orderBy("random()")
-      .limit(1);
-    if (await query.getCount() === 0) throw new HttpException(404, "Question not found");
-
-    return await query.getOne();
+      return randomQuestion;
+    } catch (e) {
+      throw new Error("QuestionService..getRandomQuestion()" + e.toString());
+    }
   }
 
   public async createQuestion(questionData: CreateQuestionsDto): Promise<Questions> {

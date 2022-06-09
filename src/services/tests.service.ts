@@ -7,11 +7,12 @@ import { isEmpty } from "@utils/util";
 import QuestionsService from "@services/questions.service";
 import { User } from "@interfaces/users.interface";
 import moment from "moment";
-import { ResultEntity } from "@entities/result.entity";
 import ResultsService from "@services/results.service";
-import resultsService from "@services/results.service";
 import { Results } from "@interfaces/results.interface";
 
+export interface TestWithStats extends Tests {
+  stats?: { questionsCount: number; corrects: number; percentage: number };
+};
 
 @EntityRepository()
 class TestService extends Repository<TestEntity> {
@@ -41,7 +42,6 @@ class TestService extends Repository<TestEntity> {
   }
 
   public generateTest = async (user: User, questionCount = 30): Promise<Tests> => {
-    // if (isEmpty(testData)) throw new HttpException(400, "You're not testData");
     try {
       const data: Tests = {
         status: Status.PENDING,
@@ -50,9 +50,9 @@ class TestService extends Repository<TestEntity> {
 
       const createdTest = await TestEntity.create(data).save();
       const results: Results[] = [];
-      for await   (const [ind] of [...Array(questionCount).entries()]) {
-        const question = await this.questionService.getRandomQuestion(ind + 1);
-        if (isEmpty(question)) throw new HttpException(400, "Empty questions");
+      for await (const [ind] of [...Array(questionCount).entries()]) {
+        const question = await this.questionService.getRandomQuestion(ind + 1, user);
+        if (isEmpty(question)) throw new Error("Random questions not found");
 
         const resultPayload: Results = {
           question,
@@ -62,14 +62,14 @@ class TestService extends Repository<TestEntity> {
         const result = await this.resultService.createResult(resultPayload);
         results.push(result);
       }
-      if (isEmpty(results)) throw new HttpException(400, "Empty questions");
+
       return { ...createdTest, results };
     } catch (e) {
-      console.log("TestService: generateTest --", e);
+      throw new Error("TestService..generateTest()" + e.toString());
     }
   };
 
-  async completeTest(testId: number): Promise<any> {
+  async completeTest(testId: number): Promise<TestWithStats> {
     await TestEntity.update(testId, {
       status: Status.COMPLETED,
       completedAt: moment().format()
@@ -77,7 +77,19 @@ class TestService extends Repository<TestEntity> {
     // const test = await TestEntity.findOne(testId, {
     //   relations:['questions', 'results']
     // });
-    return await TestEntity.findOne(testId, { relations: ["results", "results.question"] });
+    const completedTest: TestWithStats = await TestEntity.findOne(testId, { relations: ["results", "results.question"] });
+    if (isEmpty(completedTest?.id)) throw new HttpException(400, "Test is not found by testId: " + testId);
+    console.log("completed Test", completedTest.id, completedTest.results);
+
+    completedTest.stats = { questionsCount: completedTest.results.length, corrects: 0, percentage: 0 };
+    completedTest.results.forEach((result) => {
+      if (result.selected_option === result.question.correct_answer) {
+        completedTest.stats.corrects += 1;
+      }
+    });
+    completedTest.stats.percentage = (completedTest.stats.corrects / completedTest.results.length) * 100;
+
+    return completedTest;
   }
 
   public async updateTest(testId: number, testData: CreateTestsDto): Promise<Tests> {
