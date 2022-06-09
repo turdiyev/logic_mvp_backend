@@ -22,6 +22,7 @@ export default class AuthBotMiddlewares {
           ])
         );
       } else {
+        ctx.deleteMessage(ctx.callbackQuery.message.message_id);
         await ctx.reply("Welcome, you need to register first ", Markup.inlineKeyboard([
             Markup.button.callback("Register to continue", "register_action")
           ])

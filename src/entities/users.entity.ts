@@ -18,7 +18,6 @@ export class UserEntity extends BaseEntity implements User {
   id: number;
 
   @Column()
-  @IsNotEmpty()
   @Unique(["telegram_user_id"])
   telegram_user_id: number;
 

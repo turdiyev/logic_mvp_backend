@@ -4,11 +4,11 @@ import { Tests } from "@interfaces/test.interface";
 
 export class CreateResultsDto {
   @IsEnum(OptionsEnum)
-  public correct_option: OptionsEnum;
+  public selected_option?: OptionsEnum;
 
   @IsNumber()
-  test: Tests;
+  test?: Tests;
 
-  @IsNumber()
-  questions: Questions;
+  @IsJSON()
+  question: Questions;
 }

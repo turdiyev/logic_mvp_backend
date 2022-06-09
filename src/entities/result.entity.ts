@@ -4,7 +4,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, PrimaryColumn, OneToOne, JoinTable, JoinColumn
+  UpdateDateColumn, PrimaryColumn, OneToOne, JoinTable, JoinColumn, ManyToOne, ManyToMany
 } from "typeorm";
 import { OptionsEnum } from "@interfaces/questions.interface";
 import { TestEntity } from "@entities/test.entity";
@@ -12,17 +12,11 @@ import { QuestionEntity } from "@entities/questions.entity";
 import { Results } from "@interfaces/results.interface";
 
 @Entity("results")
-export class ResultEntity extends BaseEntity implements Results{
+export class ResultEntity extends BaseEntity implements Results {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @PrimaryColumn({ type: "int" })
-  test_id: number;
-
-  @PrimaryColumn({ type: "int" })
-  question_id: number;
-
-  @Column({ type: "enum", enum: OptionsEnum, nullable:true })
+  @Column({ type: "enum", enum: OptionsEnum, nullable: true })
   selected_option: OptionsEnum;
 
   @Column()
@@ -33,11 +27,18 @@ export class ResultEntity extends BaseEntity implements Results{
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToOne(() => TestEntity)
-  @JoinTable()
+  @ManyToOne(() => TestEntity, test => test.results)
+  @JoinColumn({ name: "test_id" })
   test: TestEntity;
 
-  @OneToOne(() => QuestionEntity)
-  @JoinTable()
+  @Column({type:"integer"})
+  test_id: number;
+
+
+  @ManyToOne(() => QuestionEntity)
+  @JoinColumn({ name: "question_id" })
   question: QuestionEntity;
+
+  @Column({type:"integer", unique: false})
+  question_id: number;
 }

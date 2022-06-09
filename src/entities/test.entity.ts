@@ -4,7 +4,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, ManyToOne, ManyToMany, JoinTable, Generated, JoinColumn, OneToOne
+  UpdateDateColumn, ManyToOne, ManyToMany, JoinTable, Generated, JoinColumn, OneToOne, OneToMany
 } from "typeorm";
 import { Tests as Test } from "@interfaces/test.interface";
 import { UserEntity } from "@entities/users.entity";
@@ -42,19 +42,7 @@ export class TestEntity extends BaseEntity implements Test {
   @ManyToOne(() => UserEntity, (user) => user.tests)
   user: UserEntity;
 
-
-  @ManyToMany(() => QuestionEntity)
-  @JoinTable({
-    name: "results",
-    joinColumn: {
-      name: 'test_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'question_id',
-      referencedColumnName: 'id',
-    },
-  })
-  questions: QuestionEntity[];
+  @OneToMany(() => ResultEntity, results => results.test)
+  results: ResultEntity[];
 
 }

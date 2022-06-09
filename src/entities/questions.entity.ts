@@ -12,7 +12,7 @@ import { UserEntity } from "@entities/users.entity";
 import { TestEntity } from "@entities/test.entity";
 import { ResultEntity } from "@entities/result.entity";
 
-@Entity('questions')
+@Entity("questions")
 export class QuestionEntity extends BaseEntity implements IQuestions {
   @PrimaryGeneratedColumn()
   id: number;
@@ -43,6 +43,4 @@ export class QuestionEntity extends BaseEntity implements IQuestions {
 
   @OneToMany(() => UserEntity, (user) => user.questions)
   user: UserEntity;
-
-
 }

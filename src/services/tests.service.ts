@@ -8,10 +8,15 @@ import QuestionsService from "@services/questions.service";
 import { User } from "@interfaces/users.interface";
 import moment from "moment";
 import { ResultEntity } from "@entities/result.entity";
+import ResultsService from "@services/results.service";
+import resultsService from "@services/results.service";
+import { Results } from "@interfaces/results.interface";
+
 
 @EntityRepository()
 class TestService extends Repository<TestEntity> {
   questionService = new QuestionsService();
+  resultService = new ResultsService();
 
   public async findAllTest(): Promise<Tests[]> {
     const tests: Tests[] = await TestEntity.find();
@@ -35,25 +40,34 @@ class TestService extends Repository<TestEntity> {
     return createTestData;
   }
 
-  async generateTest(user: User, questionCount = 30): Promise<Tests> {
+  public generateTest = async (user: User, questionCount = 30): Promise<Tests> => {
     // if (isEmpty(testData)) throw new HttpException(400, "You're not testData");
-    const questions = [];
-    for await   (const [ind] of [...Array(questionCount).entries()]) {
-      const item = await this.questionService.getRandomQuestion(ind + 1);
-      if (isEmpty(item)) throw new HttpException(400, "Empty questions");
+    try {
+      const data: Tests = {
+        status: Status.PENDING,
+        user
+      };
 
-      questions.push(item);
+      const createdTest = await TestEntity.create(data).save();
+      const results: Results[] = [];
+      for await   (const [ind] of [...Array(questionCount).entries()]) {
+        const question = await this.questionService.getRandomQuestion(ind + 1);
+        if (isEmpty(question)) throw new HttpException(400, "Empty questions");
+
+        const resultPayload: Results = {
+          question,
+          test: createdTest,
+          selected_option: null
+        };
+        const result = await this.resultService.createResult(resultPayload);
+        results.push(result);
+      }
+      if (isEmpty(results)) throw new HttpException(400, "Empty questions");
+      return { ...createdTest, results };
+    } catch (e) {
+      console.log("TestService: generateTest --", e);
     }
-    if (isEmpty(questions)) throw new HttpException(400, "Empty questions");
-
-    const data = {
-      status: Status.PENDING,
-      user,
-      questions
-    };
-
-    return await TestEntity.create(data).save();
-  }
+  };
 
   async completeTest(testId: number): Promise<any> {
     await TestEntity.update(testId, {
@@ -63,15 +77,7 @@ class TestService extends Repository<TestEntity> {
     // const test = await TestEntity.findOne(testId, {
     //   relations:['questions', 'results']
     // });
-    const test = await ResultEntity.createQueryBuilder('r')
-      // .select('res.selected_option','selected_option')
-      .innerJoinAndSelect('r.test','t')
-      .innerJoinAndSelect('r.question','q')
-      // .innerJoin('questions', 'q', 'r.questions_id = q.id')
-      // .where('t.id = :testId',{testId})
-      .getMany()
-
-    return test;
+    return await TestEntity.findOne(testId, { relations: ["results", "results.question"] });
   }
 
   public async updateTest(testId: number, testData: CreateTestsDto): Promise<Tests> {

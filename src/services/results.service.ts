@@ -27,22 +27,26 @@ class ResultsService extends Repository<ResultEntity> {
     return findResults;
   }
 
-  public async createResults(resultData: CreateResultsDto): Promise<Results> {
-    if (isEmpty(resultData)) throw new HttpException(400, "You're not resultData");
+  public async createResult(resultData: Results): Promise<Results> {
+    try {
+      if (isEmpty(resultData)) throw new HttpException(400, "You're not resultData");
 
-    const createResultsData: Results = await ResultEntity.create({ ...resultData }).save();
+      const created = await ResultEntity.create({ ...resultData }).save();
 
-    return createResultsData;
+      return await ResultEntity.findOne({ where: { id: created.id }, relations:['question'] });
+    } catch (e) {
+      console.log("ResultService: createResult --", e);
+    }
   }
 
   public async saveByQuestion(testId: number, questionId: number, correctOption: string): Promise<void> {
     const data: Results = {
       selected_option: correctOption as OptionsEnum
     };
-    await ResultEntity.update( {
+    await ResultEntity.update({
       test_id: testId,
       question_id: questionId
-    } , data);
+    }, data);
   }
 
 
