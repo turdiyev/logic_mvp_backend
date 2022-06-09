@@ -70,26 +70,30 @@ class TestService extends Repository<TestEntity> {
   };
 
   async completeTest(testId: number): Promise<TestWithStats> {
-    await TestEntity.update(testId, {
-      status: Status.COMPLETED,
-      completedAt: moment().format()
-    });
-    // const test = await TestEntity.findOne(testId, {
-    //   relations:['questions', 'results']
-    // });
-    const completedTest: TestWithStats = await TestEntity.findOne(testId, { relations: ["results", "results.question"] });
-    if (isEmpty(completedTest?.id)) throw new HttpException(400, "Test is not found by testId: " + testId);
-    console.log("completed Test", completedTest.id, completedTest.results);
+    try {
+      await TestEntity.update(testId, {
+        status: Status.COMPLETED,
+        completedAt: moment().format()
+      });
+      // const test = await TestEntity.findOne(testId, {
+      //   relations:['questions', 'results']
+      // });
+      const completedTest: TestWithStats = await TestEntity.findOne(testId, { relations: ["results", "results.question"] });
+      if (isEmpty(completedTest?.id)) throw new HttpException(400, "Test is not found by testId: " + testId);
+      console.log("completed Test", completedTest.id, completedTest.results);
 
-    completedTest.stats = { questionsCount: completedTest.results.length, corrects: 0, percentage: 0 };
-    completedTest.results.forEach((result) => {
-      if (result.selected_option === result.question.correct_answer) {
-        completedTest.stats.corrects += 1;
-      }
-    });
-    completedTest.stats.percentage = (completedTest.stats.corrects / completedTest.results.length) * 100;
+      completedTest.stats = { questionsCount: completedTest.results.length, corrects: 0, percentage: 0 };
+      completedTest.results.forEach((result) => {
+        if (result.selected_option === result.question.correct_answer) {
+          completedTest.stats.corrects += 1;
+        }
+      });
+      completedTest.stats.percentage = (completedTest.stats.corrects / completedTest.results.length) * 100;
 
-    return completedTest;
+      return completedTest;
+    } catch (e) {
+      throw new Error("TestService..completeTest -" + e);
+    }
   }
 
   public async updateTest(testId: number, testData: CreateTestsDto): Promise<Tests> {

@@ -13,9 +13,9 @@ export default class ResultsBotMiddlewares {
     // await ctx.answerCbQuery('sdfa adsfa fadsfad fasd');
     const completedTest = ctx.session.curTest;
     const results = completedTest.results as Results[];
-    ctx.answerCbQuery();
+    // if (ctx?.answerCbQuery) ctx.answerCbQuery();
 
-    for (const result of results) {
+    for await(const [_, result] of [...results.entries()]) {
       await ctx.replyWithPhoto({ source: `./uploads/${result.question.image}` }, {
         caption: `<strong>${result.question.number}-savol</strong>(${completedTest.id}-test)`,
         parse_mode: "HTML",
@@ -27,6 +27,9 @@ export default class ResultsBotMiddlewares {
         ])
       });
     }
+    ctx.reply("d", Markup.keyboard([
+      "Yangi Test"
+    ]));
   };
 }
 

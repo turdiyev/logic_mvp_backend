@@ -4,13 +4,11 @@ import TestController from "@/bot/controller/test.bot.controller";
 import { Tests } from "@interfaces/test.interface";
 import ResultsBotController from "@/bot/controller/results.bot.controller";
 import moment from "moment";
-import PdfController from "@/bot/controller/pdfController";
 import { TestWithStats } from "@services/tests.service";
 
 export default class BotTestAction {
   public testController = new TestController();
   public resultController = new ResultsBotController();
-  public pdfController = new PdfController();
 
   public startTest = async (ctx: MyContext, next) => {
     // await ctx.answerCbQuery();
@@ -85,9 +83,15 @@ export default class BotTestAction {
 <em>Foizda</em>: <strong>${Math.round(completedTest.stats.percentage)}%</strong>
 <em>Tugatilgan vaqt:</em> ${moment(completedTest.completedAt).format("DD.MM.YYYY, hh:mm:ss")}
 <em>Test raqami:</em> ${curTest.id}
-<em>Ishladi:</em> ${ctx.session.currentUser.first_name}`, Markup.inlineKeyboard([
-          Markup.button.callback("Javobini ko'rish", "open_results")
-        ]));
+<em>Ishladi:</em> ${completedTest.user?.first_name}`, {
+          // ...Markup.inlineKeyboard([
+          //   Markup.button.callback("Javobini ko'rish", "open_results")
+          // ]),
+          ...Markup.keyboard([
+            "Javobni ko'rish",
+            "Yangi Test",
+          ]).oneTime()
+        });
         if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);
       }
     } catch (e) {

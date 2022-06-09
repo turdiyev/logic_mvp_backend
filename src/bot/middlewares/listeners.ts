@@ -2,14 +2,17 @@ import {  Telegraf } from "telegraf";
 import { MyContext } from "@/bot/bot.interfaces";
 import AuthBotMiddlewares from "@/bot/middlewares/auth.bot.middlewares";
 import BotTestAction from "@/bot/middlewares/test.bot.middlewares";
+import ResultsBotMiddlewares from "@/bot/middlewares/results.bot.middlewares";
 
 
 export default function initListeners(bot: Telegraf<MyContext>) {
   const authActions = new AuthBotMiddlewares();
   const testActions = new BotTestAction();
+  const resultsActions = new ResultsBotMiddlewares();
 
   bot.start(authActions.welcome);
 
+  bot.hears("Javobni ko'rish", resultsActions.openResults);
 
   bot.help((ctx) => ctx.reply("Send me a sticker"));
   bot.on("sticker", (ctx) => ctx.reply("👍"));
