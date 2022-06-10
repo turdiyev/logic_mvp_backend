@@ -13,6 +13,7 @@ export default function initListeners(bot: Telegraf<MyContext>) {
   bot.start(authActions.welcome);
 
   bot.hears("Javobni ko'rish", resultsActions.openResults);
+  bot.hears("Yangi Test", testActions.startTest);
 
   bot.help((ctx) => ctx.reply("Send me a sticker"));
   bot.on("sticker", (ctx) => ctx.reply("👍"));
