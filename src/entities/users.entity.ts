@@ -11,8 +11,9 @@ import {
 import { User } from "@interfaces/users.interface";
 import { QuestionEntity } from "@entities/questions.entity";
 import { TestEntity } from "@entities/test.entity";
+import { TransactionEntity } from "@entities/transaction.entity";
 
-@Entity('users')
+@Entity("users")
 export class UserEntity extends BaseEntity implements User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -20,6 +21,9 @@ export class UserEntity extends BaseEntity implements User {
   @Column()
   @Unique(["telegram_user_id"])
   telegram_user_id: number;
+
+  @Column({type: 'bigint', unique: true, nullable: true})
+  balance_id: number;
 
   @Column({ nullable: true })
   @Unique(["email"])
@@ -57,4 +61,7 @@ export class UserEntity extends BaseEntity implements User {
 
   @OneToMany(() => TestEntity, test => test.user)
   tests: TestEntity[];
+
+  @OneToMany(() => TransactionEntity, transaction => transaction.user)
+  transactions: TransactionEntity[];
 }

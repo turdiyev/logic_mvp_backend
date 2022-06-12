@@ -6,6 +6,7 @@ import TestsRoute from "@routes/tests.route";
 import QuestionsRoute from "@routes/questions.route";
 import validateEnv from "@utils/validateEnv";
 import "@/bot/bot";
+import TransactionsRoute from "@routes/transactions.route";
 
 validateEnv();
 
@@ -15,7 +16,8 @@ const app = new App([
   new UsersRoute(),
   new QuestionsRoute(),
   new TestsRoute(),
-  new AuthRoute()
+  new TransactionsRoute(),
+  new AuthRoute(),
   ]);
 
 app.listen();

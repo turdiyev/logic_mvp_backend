@@ -16,9 +16,16 @@ class AuthService extends Repository<UserEntity> {
 
     const findUser: User = await UserEntity.findOne({ where: { username: userData.username } });
     if (findUser) throw new HttpException(409, `You're username ${userData.username} already exists`);
+    const { max: maxBalanceId } = await UserEntity.createQueryBuilder()
+      .select("MAX(balance_id) as max")
+      .getOne() as any;
 
     const hashedPassword = await hash(userData.password, 10);
-    const createUserData: User = await UserEntity.create({ ...userData, password: hashedPassword }).save();
+    const createUserData: User = await UserEntity.create({
+      ...userData,
+      password: hashedPassword,
+      balance_id: maxBalanceId || 11982343
+    }).save();
     return createUserData;
   }
 
@@ -38,23 +45,23 @@ class AuthService extends Repository<UserEntity> {
   }
 
   public async signUpOrIn(userData: CreateUserDto): Promise<{ cookie: string; findUser: User }> {
-   try {
-     if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
+    try {
+      if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
 
-     let findUser: User = await UserEntity.findOne({ where: { username: userData.username } });
-     if (!findUser) {
-       findUser = await this.signup(userData);
-     }
+      let findUser: User = await UserEntity.findOne({ where: { username: userData.username } });
+      if (!findUser) {
+        findUser = await this.signup(userData);
+      }
 
-     const isPasswordMatching: boolean = await compare(userData.password, findUser.password);
-     if (!isPasswordMatching) throw new HttpException(409, "You're password not matching");
+      const isPasswordMatching: boolean = await compare(userData.password, findUser.password);
+      if (!isPasswordMatching) throw new HttpException(409, "You're password not matching");
 
-     const tokenData = this.createToken(findUser);
-     // const cookie = this.createCookie(tokenData);
-     return { cookie: null, findUser };
-   }catch (e){
-     throw new Error(e)
-   }
+      const tokenData = this.createToken(findUser);
+      // const cookie = this.createCookie(tokenData);
+      return { cookie: null, findUser };
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   public async logout(userData: User): Promise<User> {

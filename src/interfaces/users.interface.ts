@@ -1,5 +1,6 @@
 export interface User {
   id: number;
+  balance_id: number;
   email: string;
   password: string;
   username: string;
