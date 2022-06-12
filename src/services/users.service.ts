@@ -1,10 +1,10 @@
-import { hash } from 'bcrypt';
-import { EntityRepository, Repository } from 'typeorm';
-import { CreateUserDto } from '@dtos/users.dto';
-import { UserEntity } from '@entities/users.entity';
-import { HttpException } from '@exceptions/HttpException';
-import { User } from '@interfaces/users.interface';
-import { isEmpty } from '@utils/util';
+import { hash } from "bcrypt";
+import { EntityRepository, Repository } from "typeorm";
+import { CreateUserDto } from "@dtos/users.dto";
+import { UserEntity } from "@entities/users.entity";
+import { HttpException } from "@exceptions/HttpException";
+import { User } from "@interfaces/users.interface";
+import { isEmpty } from "@utils/util";
 import { WhereClause } from "typeorm/query-builder/WhereClause";
 
 @EntityRepository()
@@ -14,14 +14,13 @@ class UserService extends Repository<UserEntity> {
     return users;
   }
 
-  public async findUser(user:Partial<User>): Promise<User> {
-    // if (isEmpty(userId)) throw new HttpException(400, "You're not userId");
-
-    const findUser: User = await UserEntity.findOne({ where: {...user} });
+  public async findUser(user: Partial<User>): Promise<User> {
+    const findUser: User = await UserEntity.findOne({ where: { ...user } });
     if (!findUser) throw new HttpException(409, "You're not user");
 
     return findUser;
   }
+
   public async findUserById(userId: number): Promise<User> {
     if (isEmpty(userId)) throw new HttpException(400, "You're not userId");
 

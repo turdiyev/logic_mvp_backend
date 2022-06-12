@@ -23,7 +23,7 @@ export class UserEntity extends BaseEntity implements User {
   telegram_user_id: number;
 
   @Column({type: 'bigint', unique: true, nullable: true})
-  balance_id: number;
+  account_number: number;
 
   @Column({ nullable: true })
   @Unique(["email"])

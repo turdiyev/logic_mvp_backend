@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { getConnection } from "typeorm";
+import { Between, getConnection, LessThan, MoreThan } from "typeorm";
 import crypto from "crypto";
 import moment from "moment";
 import payComTransactionService from "@services/paymeTransaction.service";
 import { ITransaction } from "@interfaces/transaction.interface";
 import usersService from "@services/users.service";
+import { PayMeException } from "@exceptions/PayMeException";
 
 const STATE_CREATED = 1;
 const STATE_COMPLETED = 2;
@@ -15,17 +16,24 @@ class PayComTransactionController {
   public usersService = new usersService();
   public transactionService = new payComTransactionService();
 
-  public index = (req: Request, res: Response, next: NextFunction): void => {
-    console.log("PayCOM .. index --- ", req.body, req.headers);
-    if (!req.body) {
-      this.sendError("Empty request", -32300, res);
-    }
-    if (!this.isLoggedIn(req.headers)) {
-      return this.sendError("Incorrect login", -32504, res);
-    }
+  public index = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      if (!req.body) {
+        return this.sendError("Empty request", -32300, res);
+      }
+      if (!this.isLoggedIn(req.headers)) {
+        return this.sendError("Incorrect login", -32504, res);
+      }
 
-    this.checkMethod(req, res, next);
-  };
+      await this.checkMethod(req, res, next);
+    } catch (e) {
+      if (e.code) {
+        this.sendError(e.message, e.code, res);
+      }
+      next(e);
+    }
+  }
+  ;
 
   private isLoggedIn(headers) {
     const authorization = headers["authorization"];
@@ -33,7 +41,6 @@ class PayComTransactionController {
       return false;
     }
     const token = authorization.replace("Basic ", "");
-    console.log("PayCom .. isLoggedIn -- ", base64Decode(token), process.env.PAYCOM_KEY, sha1(base64Decode(token)), sha1(`Paycom:${process.env.PAYCOM_KEY}`));
 
     if (sha1(base64Decode(token)) !== sha1(`Paycom:${process.env.PAYCOM_KEY}`)) {
       return false;
@@ -42,25 +49,26 @@ class PayComTransactionController {
     return true;
   }
 
-  private checkMethod(req: Request, res: Response, next: NextFunction) {
+  private async checkMethod(req: Request, res: Response, next: NextFunction) {
+
     switch (req.body.method) {
       case "CheckPerformTransaction":
-        this.checkPerformTransaction(req, res, next);
+        await this.checkPerformTransaction(req, res, next);
         break;
       case "CreateTransaction":
-        this.createTransaction(req, res, next);
+        await this.createTransaction(req, res, next);
         break;
       case "PerformTransaction":
-        this.performTransaction(req, res, next);
+        await this.performTransaction(req, res, next);
         break;
       case "CancelTransaction":
-        this.cancelTransaction(req, res, next);
+        await this.cancelTransaction(req, res, next);
         break;
       case "CheckTransaction":
-        this.checkTransaction(req, res, next);
+        await this.checkTransaction(req, res, next);
         break;
       case "GetStatement":
-        this.getStatement(req, res, next);
+        await this.getStatement(req, res, next);
         break;
 
       default:
@@ -68,47 +76,52 @@ class PayComTransactionController {
     }
   }
 
-  private checkPerformTransaction = (req: Request, res: Response, next: NextFunction) => {
-    if (this.isValidAmount(req.body.params.amount, res)) {
-      this.sendError("amount-out-of-range", -31001, res);
-    }
+  private checkPerformTransaction = async (req: Request, res: Response, next: NextFunction) => {
+    await this.getAccount(Number(req.body.params.account.account));
+
+    this.checkIsValidAmount(req.body.params.amount);
 
     return res.status(200).json({ allow: true });
   };
 
   private async createTransaction(req: Request, res: Response, next: NextFunction) {
-    try {
-      const host = this.getHost(req.body.params?.account?.id_number as number, res);
-      this.isValidAmount(req.body.params.amount, res);
+    const host = await this.getAccount(Number(req.body.params?.account?.account || 0));
+    this.checkIsValidAmount(req.body.params.amount);
 
-      const { id, time, amount, ...rest } = req.body.params;
+    try {
+      const { id, time, amount } = req.body.params;
       const transaction = await this.transactionService.getOrCreate({
         user: host,
-        create_time: time,
+        create_time: Number(time),
         paycom_transaction_id: id,
         state: STATE_CREATED,
-        amount: amount,
-        ...rest
+        amount: amount
       });
-      return res.status(200).json({ data: transaction });
+      return res.status(200).json({
+        create_time: transaction.create_time,
+        transaction: transaction.id,
+        state: STATE_CREATED
+      } as Partial<ITransaction>);
     } catch (e) {
-      this.sendError("Server error", -31008, res);
+      throw new PayMeException(-31008, "Server error");
     }
   }
 
   private async performTransaction(req: Request, res: Response, next: NextFunction) {
-    const transaction = await this.transactionService.getById(req.body.params.id);
+    let transaction = await this.transactionService.getByPayComTransactionId(req.body.params.id);
     if (!transaction) {
-      this.sendError("Transaction not found", -31003, res);
+      throw new PayMeException(-31003, "Transaction not found");
     }
     if (transaction.state === STATE_COMPLETED) {
       return res.status(200).json({
-        data: transaction
-      });
+        perform_time: Number(transaction.perform_time),
+        transaction: transaction.id,
+        state: STATE_COMPLETED
+      } as Partial<ITransaction>);
     }
 
     if (transaction.state != STATE_CREATED) {
-      this.sendError("Transaction canceled", -31008, res);
+      throw new PayMeException(-31008, "Transaction canceled");
     }
     const connection = getConnection();
     const queryRunner = connection.createQueryRunner();
@@ -119,18 +132,18 @@ class PayComTransactionController {
     await queryRunner.startTransaction();
 
     try {
-      await this.transactionService.updateItem(transaction.id, {
+      // await this.getAccount(transaction.user.account_number);//Maybe not needed
+      transaction = await this.transactionService.updateItem(transaction.id, {
         perform_time: moment().valueOf(),
         state: STATE_COMPLETED
       } as ITransaction);
 
+
       await queryRunner.commitTransaction();
       return res.status(200).json({
-        data: {
-          perform_time: transaction.perform_time,
-          transaction: transaction.id,
-          state: STATE_COMPLETED
-        }
+        perform_time: Number(transaction.perform_time),
+        transaction: transaction.id,
+        state: STATE_COMPLETED
       });
 
     } catch (e) {
@@ -140,67 +153,86 @@ class PayComTransactionController {
   }
 
   private async cancelTransaction(req: Request, res: Response, next: NextFunction) {
-    const transaction = await this.transactionService.getById(req.body.params.id);
+    console.log("body -- ", JSON.stringify(req.body, null, 2));
+    let transaction = await this.transactionService.getByPayComTransactionId(req.body.params.id);
     if (!transaction) {
-      this.sendError("Transaction not found", -31003, res);
+      throw new PayMeException(-31003, "Transaction not found");
     }
 
     if (transaction.state === STATE_CREATED) {
-      await this.transactionService.updateItem(transaction.id, {
+      transaction = await this.transactionService.updateItem(transaction.id, {
         state: STATE_CANCELLED,
         cancel_time: moment().valueOf(),
-        reason: req.body.reason
+        reason: req.body.params.reason
       } as ITransaction);
     } else if (transaction.state === STATE_COMPLETED) {
-      await this.transactionService.updateItem(transaction.id, {
+      transaction = await this.transactionService.updateItem(transaction.id, {
         state: STATE_CANCELLED_AFTER_COMPLETE,
         cancel_time: moment().valueOf(),
-        reason: req.body.reason
+        reason: req.body.params.reason
       } as ITransaction);
     }
 
 
     return res.status(200).json({
-      data: {
-        cancel_time: transaction.cancel_time,
-        transaction: transaction.id,
-        state: transaction.state,
-        reason: transaction.reason
-      }
+      cancel_time: transaction.cancel_time,
+      transaction: transaction.id,
+      state: transaction.state,
+      reason: transaction.reason
     });
   }
 
   private async checkTransaction(req: Request, res: Response, next: NextFunction) {
-    const transaction = await this.transactionService.getById(req.body.params.id);
+    const transaction = await this.transactionService.getByPayComTransactionId(req.body.params.id);
     if (!transaction) {
-      this.sendError("Transaction not found", -31003, res);
+      throw new PayMeException(-31003, "Transaction not found");
     }
     return res.status(200).json({
-      data: {
-        create_time: transaction.create_time,
-        perform_time: transaction.perform_time,
-        cancel_time: transaction.cancel_time,
-        transaction: transaction.id,
-        state: transaction.state,
-        reason: transaction.reason || null
-      }
+      create_time: transaction.create_time,
+      perform_time: transaction.perform_time,
+      cancel_time: transaction.cancel_time,
+      transaction: transaction.id,
+      state: transaction.state,
+      reason: transaction.reason || null
     });
   }
 
   private async getStatement(req: Request, res: Response, next: NextFunction) {
-    const transactionList = await this.transactionService.getList();
+    const transactionList = await this.transactionService.getList({
+      where: {
+        create_time: Between(req.body.params.from || 0, req.body.params.to)
+      },
+      order: {
+        create_time: "ASC"
+      },
+      relations: ["user"]
+    });
+
+    const transactions = transactionList.map(t => ({
+      id: t.paycom_transaction_id,
+      time: t.create_time,
+      amount: t.amount,
+      account: { account: t.user.account_number },
+      create_time: t.create_time,
+      perform_time: t.perform_time,
+      cancel_time: t.cancel_time,
+      transaction: t.id,
+      state: t.state,
+      reason: t.reason || null,
+      receivers: t.receivers
+    } as any));
 
     return res.status(200).json({
-      data: transactionList
+      ...transactions
     });
   }
 
-  private isValidAmount(amount: number, res) {
-    const isValid = amount > 9999999900 || amount < 50000;
-    if (isValid) {
-      this.sendError("amount-out-of-range", -31001, res);
+  private checkIsValidAmount(amount: number) {
+    const isNotValid = amount > 50000000 || amount < 50000;
+    if (isNotValid) {
+      throw new PayMeException(-31001, "amount-out-of-range");
     }
-    return isValid;
+    return !isNotValid;
   }
 
   public sendError = (error = null, code = 500, res) => {
@@ -219,13 +251,12 @@ class PayComTransactionController {
     // throw new Error(error);
   };
 
-  private async getHost(balanceId = null, res: Response) {
-    const user = await this.usersService.findUser({ balance_id: balanceId });
-    if (!user?.id) {
-      this.sendError("host-not-found", -31099, res);
+  private async getAccount(account_number = null) {
+    try {
+      return await this.usersService.findUser({ account_number });
+    } catch (e) {
+      throw new PayMeException(-31099, "host-not-found");
     }
-    return user;
-
   }
 
   getUrl(host, amount) {

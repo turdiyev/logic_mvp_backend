@@ -4,7 +4,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, ManyToOne
+  UpdateDateColumn, ManyToOne, JoinColumn
 } from "typeorm";
 import { UserEntity } from "@entities/users.entity";
 import { ITransaction } from "@interfaces/transaction.interface";
@@ -26,7 +26,7 @@ export class TransactionEntity extends BaseEntity implements ITransaction {
   @Column({ type: "bigint", nullable: true })
   perform_time: number;
 
-  @Column({ type: "bigint", nullable: true })
+  @Column({ type: "bigint", nullable: true, default: 0 })
   cancel_time: number;
 
   @Column({ default: 0 })
@@ -38,7 +38,7 @@ export class TransactionEntity extends BaseEntity implements ITransaction {
   @Column({ nullable: true })
   reason: number;
 
-  @Column({ type: "jsonb", default:'[]' })
+  @Column({ type: "jsonb", default: "[]" })
   receivers: any;
 
   @Column()
@@ -50,5 +50,6 @@ export class TransactionEntity extends BaseEntity implements ITransaction {
   updatedAt: Date;
 
   @ManyToOne(() => UserEntity, test => test.transactions)
+  @JoinColumn()
   user: UserEntity;
 }

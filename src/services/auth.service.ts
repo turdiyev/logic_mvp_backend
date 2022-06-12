@@ -17,14 +17,14 @@ class AuthService extends Repository<UserEntity> {
     const findUser: User = await UserEntity.findOne({ where: { username: userData.username } });
     if (findUser) throw new HttpException(409, `You're username ${userData.username} already exists`);
     const { max: maxBalanceId } = await UserEntity.createQueryBuilder()
-      .select("MAX(balance_id) as max")
+      .select("MAX(account_number) as max")
       .getOne() as any;
 
     const hashedPassword = await hash(userData.password, 10);
     const createUserData: User = await UserEntity.create({
       ...userData,
       password: hashedPassword,
-      balance_id: maxBalanceId || 11982343
+      account_number: maxBalanceId || 11982343
     }).save();
     return createUserData;
   }
