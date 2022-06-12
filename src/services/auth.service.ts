@@ -16,15 +16,16 @@ class AuthService extends Repository<UserEntity> {
 
     const findUser: User = await UserEntity.findOne({ where: { username: userData.username } });
     if (findUser) throw new HttpException(409, `You're username ${userData.username} already exists`);
-    const { max: maxBalanceId } = await UserEntity.createQueryBuilder()
-      .select("MAX(account_number) as max")
-      .getOne() as any;
+    const { max: maxAccountNumber } = await UserEntity.createQueryBuilder("u")
+      .select("MAX(u.account_number)", "max")
+      .getRawOne();
+
 
     const hashedPassword = await hash(userData.password, 10);
     const createUserData: User = await UserEntity.create({
       ...userData,
       password: hashedPassword,
-      account_number: maxBalanceId || 11982343
+      account_number: (maxAccountNumber + 1) || 11982343
     }).save();
     return createUserData;
   }
@@ -56,7 +57,7 @@ class AuthService extends Repository<UserEntity> {
       const isPasswordMatching: boolean = await compare(userData.password, findUser.password);
       if (!isPasswordMatching) throw new HttpException(409, "You're password not matching");
 
-      const tokenData = this.createToken(findUser);
+      // const tokenData = this.createToken(findUser);
       // const cookie = this.createCookie(tokenData);
       return { cookie: null, findUser };
     } catch (e) {

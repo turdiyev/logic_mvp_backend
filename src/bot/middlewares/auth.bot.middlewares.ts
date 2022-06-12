@@ -3,9 +3,13 @@ import { User } from "@interfaces/users.interface";
 import { Markup } from "telegraf";
 import BotAuthController from "@/bot/controller/botAuth.controller";
 import { MyContext } from "@/bot/bot.interfaces";
+import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
+import BotUtils from "@/bot/utils/BotUtils";
+import usersController from "@/bot/controller/users.controller";
 
 export default class AuthBotMiddlewares {
   public authController = new BotAuthController();
+  public userController = new usersController();
 
   public welcome = async (ctx: MyContext) => {
     try {
@@ -13,19 +17,17 @@ export default class AuthBotMiddlewares {
         await ctx.reply("Afsuski botlar uchun kirish huquqi yo'q");
         return;
       }
+      const user = await this.userController.getUserByTgId(ctx.from.id);
 
-      const sessionUser: User = ctx.session?.currentUser;
+      if (user?.id) {
+        const replyContent = this.welcomeCtx(user);
+        await ctx.replyWithHTML(replyContent.message, replyContent.extra);
 
-      if (sessionUser?.id) {
-        await ctx.reply(`Welcome, ${getUserDisplayName(sessionUser)}`, Markup.inlineKeyboard([
-            Markup.button.callback("Start", "start_test_action")
-          ])
-        );
       } else {
         if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);
-        await ctx.reply("Welcome, you need to register first ", Markup.inlineKeyboard([
-            Markup.button.callback("Register to continue", "register_action")
-          ])
+        await ctx.reply("Prezident va al-Xorazmiy maktablarining kirish imtihonlariga tayyorgarlik testlari botiga hush kelibsiz!", Markup.keyboard([
+            Markup.button.callback("Ro'yxatdan o'tish", "register_action")
+          ]).resize().oneTime()
         );
       }
     } catch (e) {
@@ -45,15 +47,22 @@ export default class AuthBotMiddlewares {
     };
     const createUserData: User = await this.authController.signInOrUp(userData);
     ctx.session.currentUser = createUserData;
-
-    ctx.reply(`${createUserData.first_name || createUserData.username}. You are registered \n
-Your id is: 123132132\n
-Your balanse is: 20 000 so’m`, Markup.inlineKeyboard([
-      Markup.button.callback("Start Test", "start_test_action")
-    ]));
-    ctx.answerCbQuery();
+    const replyContent = this.welcomeCtx(createUserData, true);
+    ctx.replyWithHTML(replyContent.message, replyContent.extra);
+    BotUtils.answerCBQuery(ctx);
   };
 
+  private welcomeCtx(createUserData: User, isNewUser = false): { message: string, extra: ExtraReplyMessage } {
+    return {
+      message: `${getUserDisplayName(createUserData)}. ${isNewUser ? "Siz ro’yhatdan o’tdingiz." : ""} \n
+Sizning ID raqamingiz: ${createUserData.account_number}\n
+Sizning balans: ${Number(createUserData.initial_balance || 0) / 100} so’m`,
+      extra:
+        Markup.keyboard([
+          Markup.button.callback("Testni boshlash", "start_test_action")
+        ]).oneTime().resize()
+    };
+  }
 }
 
 function getUserDisplayName(user: User) {

@@ -18,11 +18,10 @@ export class UserEntity extends BaseEntity implements User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  @Unique(["telegram_user_id"])
+  @Column({ type: "bigint", unique: true })
   telegram_user_id: number;
 
-  @Column({type: 'bigint', unique: true, nullable: true})
+  @Column({ type: "bigint", unique: true, nullable: true })
   account_number: number;
 
   @Column({ nullable: true })
@@ -49,8 +48,8 @@ export class UserEntity extends BaseEntity implements User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ default: 0 })
-  balance: number;
+  @Column({ default: 2000000 })
+  initial_balance: number;
 
   @Column({ type: "json", nullable: true })
   json_data: string | object;

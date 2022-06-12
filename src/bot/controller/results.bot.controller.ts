@@ -12,9 +12,9 @@ class ResultsBotController {
       testId: test.id,
       questionId: question.id,
       number: question.number,
-      selectedOption
+      selectedOption: selectedOption.toLowerCase()
     });
-    await this.testService.saveByQuestion(test.id, question.id, selectedOption);
+    await this.testService.saveByQuestion(test.id, question.id, selectedOption.toLowerCase());
   };
 }
 

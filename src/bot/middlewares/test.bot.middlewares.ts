@@ -13,7 +13,7 @@ export default class BotTestAction {
 
   public startTest = async (ctx: MyContext, next) => {
     try {
-      const test = await this.testController.generateTest(ctx.session.currentUser, 30);
+      const test = await this.testController.generateTest(ctx.session.currentUser, 3);
       BotUtils.answerCBQuery(ctx, "Test boshlandi");
       ctx.session.curTest = test as Tests;
       ctx.session.questionsQueue = test.results.map(r => r.question);
@@ -26,7 +26,8 @@ export default class BotTestAction {
 
 
   public nextQuestion = async (ctx: MyContext, next: any) => {
-    const prev_selected_option = ctx.callbackQuery?.data?.[0];
+    console.log("nex---", JSON.stringify(ctx, null, 3));
+    const prev_selected_option = (ctx.update as any)?.message?.text || ctx.callbackQuery?.data?.[0];
     const curTest = ctx.session.curTest;
     if (!curTest) {
       BotUtils.answerCBQuery(ctx);
@@ -40,12 +41,13 @@ export default class BotTestAction {
       await ctx.replyWithPhoto({ source: `./uploads/${question.image}` }, {
         caption: `<strong>${question.number}-savol:</strong>`,
         parse_mode: "HTML",
-        ...Markup.inlineKeyboard([
-          Markup.button.callback("A", "a_option_selected_action"),
-          Markup.button.callback("B", "b_option_selected_action"),
-          Markup.button.callback("C", "c_option_selected_action"),
-          Markup.button.callback("D", "d_option_selected_action")
-        ])
+        ...Markup.keyboard([
+          [Markup.button.callback("A", "a_option_selected_action"),
+            Markup.button.callback("B", "b_option_selected_action"),
+            Markup.button.callback("C", "c_option_selected_action"),
+            Markup.button.callback("D", "d_option_selected_action")
+          ]
+        ]).oneTime().resize()
       });
       if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);//del prev msg
 
@@ -61,7 +63,7 @@ export default class BotTestAction {
 
   public completeTest = async (ctx: MyContext) => {
     try {
-      const prev_selected_option = ctx.callbackQuery.data[0];
+      const prev_selected_option = (ctx.update as any)?.message?.text || ctx.callbackQuery.data[0];
       const curTest = ctx.session.curTest;
       const results = curTest.results;
       const count = curTest.results.length;

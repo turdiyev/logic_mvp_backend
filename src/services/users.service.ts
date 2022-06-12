@@ -29,6 +29,12 @@ class UserService extends Repository<UserEntity> {
 
     return findUser;
   }
+  public async findUserByTgId(telegramUserId: number): Promise<User> {
+    const findUser: User = await UserEntity.findOne({ where: { telegram_user_id: Number(telegramUserId) } });
+    if (!findUser) throw new HttpException(409, "You're not user");
+
+    return findUser;
+  }
 
   public async createUser(userData: CreateUserDto): Promise<User> {
     if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
