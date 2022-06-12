@@ -28,7 +28,7 @@ export default class ResultsBotMiddlewares {
       });
     }
     ctx.reply("Natijalaringizni yuqorida ko'rishiz mumkin. Yana test ishlash uchun menyudagi 'Yangi Test' tugmasini bosing.", Markup.keyboard([
-      Markup.button.callback("Yangi Test", 'start_test_action')
+      Markup.button.callback("Bosh sahifaga qaytish", 'go_home')
     ]).resize());
   };
 }

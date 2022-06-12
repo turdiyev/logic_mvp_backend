@@ -43,9 +43,10 @@ class TestService extends Repository<TestEntity> {
 
   public generateTest = async (user: User, questionCount = 30): Promise<Tests> => {
     try {
-      const data: Tests = {
+      const data: Partial<Tests> = {
         status: Status.PENDING,
-        user
+        user,
+        paid_for_test: 20000 * 100
       };
 
       const createdTest = await TestEntity.create(data).save();

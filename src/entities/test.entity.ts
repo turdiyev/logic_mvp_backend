@@ -44,4 +44,6 @@ export class TestEntity extends BaseEntity implements Test {
   @OneToMany(() => ResultEntity, results => results.test)
   results: ResultEntity[];
 
+  @Column({default: 0})
+  paid_for_test: number
 }

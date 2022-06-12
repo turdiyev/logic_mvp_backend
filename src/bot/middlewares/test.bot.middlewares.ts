@@ -6,20 +6,41 @@ import ResultsBotController from "@/bot/controller/results.bot.controller";
 import moment from "moment";
 import { TestWithStats } from "@services/tests.service";
 import BotUtils from "@/bot/utils/BotUtils";
+import usersService from "@services/users.service";
 
 export default class BotTestAction {
   public testController = new TestController();
   public resultController = new ResultsBotController();
+  public userService = new usersService();
 
   public startTest = async (ctx: MyContext, next) => {
     try {
-      const test = await this.testController.generateTest(ctx.session.currentUser, 3);
-      BotUtils.answerCBQuery(ctx, "Test boshlandi");
-      ctx.session.curTest = test as Tests;
-      ctx.session.questionsQueue = test.results.map(r => r.question);
-      this.nextQuestion(ctx, next);
+      console.log("startTest --- ");
+      const balance = await this.userService.getUserBalance({ id: ctx.session.currentUser.id });
+
+      if (balance >= 20000) {
+        const test = await this.testController.generateTest(ctx.session.currentUser, 3);
+
+        BotUtils.answerCBQuery(ctx, "Test boshlandi");
+        ctx.session.curTest = test as Tests;
+        ctx.session.questionsQueue = test.results.map(r => r.question);
+        this.nextQuestion(ctx, next);
+      } else {
+        ctx.replyWithHTML("Sizning hisobingizda yetarlicha mablag’ majvud emas.\n\n" +
+          "Yangi test yechish uchun hisobingizni to’ldiring. \n\n" +
+          "Hisobni to’ldirgandan keyin testni boshlash tugmasini bosing.\n" +
+          "\n<strong>Eslatma!</strong>\n" +
+          "30 ta savoldan iborat 1 ta testni yechish narxi 20000 so’m",
+          Markup.keyboard([
+            [Markup.button.callback("Testni boshlash", "start_test_action"),
+              Markup.button.callback("Bosh sahifaga qaytish", "go_home")]
+          ]).oneTime().resize(true));
+
+      }
+
     } catch (e) {
       console.log("Bot TestAction: startTest---", e);
+      ctx.replyWithHTML("👍 Tabriklaymiz. Siz hozirda bor test savollarini ishlab chiqdingiz.");
       BotUtils.answerCBQuery(ctx, "👍 Tabriklaymiz. Siz hozirda bor test savollarini ishlab chiqdingiz.");
     }
   };
@@ -87,7 +108,7 @@ export default class BotTestAction {
           // ]),
           ...Markup.keyboard([
             [Markup.button.callback("Javobni ko'rish", "open_results"),
-              Markup.button.callback("Yangi Test", "start_test_action")]
+              Markup.button.callback("Bosh sahifaga qaytish", "go_home")]
           ]).oneTime().resize(true)
         });
         if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);

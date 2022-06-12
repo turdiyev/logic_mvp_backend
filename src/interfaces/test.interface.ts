@@ -9,4 +9,5 @@ export interface Tests {
   completedAt?: Date;
   user: User;
   results?: Results[];
+  paid_for_test: number;
 }

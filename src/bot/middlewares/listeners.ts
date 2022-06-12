@@ -11,8 +11,9 @@ export default function initListeners(bot: Telegraf<MyContext>) {
   const resultsActions = new ResultsBotMiddlewares();
 
   bot.start(authActions.welcome);
-  bot.action("Ro'yxatdan o'tish", authActions.register);
-  bot.action("Testni boshlash", testActions.startTest);
+  bot.hears("Royxatdan otish", authActions.register);
+  bot.hears("Testni boshlash", testActions.startTest);
+  bot.hears("Bosh sahifaga qaytish", authActions.welcome);
 
   bot.hears("Javobni ko'rish", resultsActions.openResults);
   bot.hears("Yangi Test", testActions.startTest);

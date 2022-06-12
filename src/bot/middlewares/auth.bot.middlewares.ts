@@ -6,10 +6,12 @@ import { MyContext } from "@/bot/bot.interfaces";
 import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
 import BotUtils from "@/bot/utils/BotUtils";
 import usersController from "@/bot/controller/users.controller";
+import usersService from "@services/users.service";
 
 export default class AuthBotMiddlewares {
   public authController = new BotAuthController();
   public userController = new usersController();
+  public userService = new usersService();
 
   public welcome = async (ctx: MyContext) => {
     try {
@@ -17,16 +19,23 @@ export default class AuthBotMiddlewares {
         await ctx.reply("Afsuski botlar uchun kirish huquqi yo'q");
         return;
       }
-      const user = await this.userController.getUserByTgId(ctx.from.id);
+      try {
+        let user = ctx.session.currentUser;
+        if (!user?.id) {
+          user = await this.userController.getUserByTgId(ctx.from.id);
+        }
+        if (user?.id) {
+          const balance = await this.userService.getUserBalance({ id: user.id });
 
-      if (user?.id) {
-        const replyContent = this.welcomeCtx(user);
-        await ctx.replyWithHTML(replyContent.message, replyContent.extra);
-
-      } else {
+          const replyContent = this.welcomeCtx(user, balance);
+          await ctx.replyWithHTML(replyContent.message, replyContent.extra);
+        } else {
+          throw new Error("User not found");
+        }
+      } catch (e) {
         if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);
         await ctx.reply("Prezident va al-Xorazmiy maktablarining kirish imtihonlariga tayyorgarlik testlari botiga hush kelibsiz!", Markup.keyboard([
-            Markup.button.callback("Ro'yxatdan o'tish", "register_action")
+            Markup.button.callback("Royxatdan otish", "register_action")
           ]).resize().oneTime()
         );
       }
@@ -47,16 +56,21 @@ export default class AuthBotMiddlewares {
     };
     const createUserData: User = await this.authController.signInOrUp(userData);
     ctx.session.currentUser = createUserData;
-    const replyContent = this.welcomeCtx(createUserData, true);
+    const balance = await this.userService.getUserBalance({ id: createUserData.id });
+    const replyContent = this.welcomeCtx(createUserData, balance, true);
     ctx.replyWithHTML(replyContent.message, replyContent.extra);
     BotUtils.answerCBQuery(ctx);
   };
 
-  private welcomeCtx(createUserData: User, isNewUser = false): { message: string, extra: ExtraReplyMessage } {
+  private welcomeCtx(createUserData: User, balance: number, isNewUser = false): { message: string, extra: ExtraReplyMessage } {
     return {
       message: `${getUserDisplayName(createUserData)}. ${isNewUser ? "Siz ro’yhatdan o’tdingiz." : ""} \n
 Sizning ID raqamingiz: ${createUserData.account_number}\n
-Sizning balans: ${Number(createUserData.initial_balance || 0) / 100} so’m`,
+Sizning balans: ${balance} so’m\n
+\n
+<strong>Eslatma!</strong>\n
+30 ta savoldan iborat 1 ta
+testni yechish narxi 20000 so’m`,
       extra:
         Markup.keyboard([
           Markup.button.callback("Testni boshlash", "start_test_action")
