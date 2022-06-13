@@ -65,10 +65,9 @@ export default class AuthBotMiddlewares {
   private welcomeCtx(createUserData: User, balance: number, isNewUser = false): { message: string, extra: ExtraReplyMessage } {
     return {
       message: `${getUserDisplayName(createUserData)}. ${isNewUser ? "Siz ro’yhatdan o’tdingiz." : ""} \n
-Sizning ID raqamingiz: ${createUserData.account_number}\n
+Sizning ID raqamingiz: <code>${createUserData.account_number}</code>\n
 Sizning balans: ${balance} so’m\n
-\n
-<strong>Eslatma!</strong>\n
+<strong>Eslatma!</strong>
 30 ta savoldan iborat 1 ta
 testni yechish narxi 20000 so’m`,
       extra:

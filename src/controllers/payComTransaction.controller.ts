@@ -19,16 +19,16 @@ class PayComTransactionController {
   public index = async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.body) {
-        return this.sendError("Empty request", -32300, res);
+        throw new PayMeException(-32300, "Empty request");
       }
       if (!this.isLoggedIn(req.headers)) {
-        return this.sendError("Incorrect login", -32504, res);
+        throw new PayMeException(-32504, "Incorrect login");
       }
 
       await this.checkMethod(req, res, next);
     } catch (e) {
       if (e.code) {
-        this.sendError(e.message, e.code, res);
+        this.sendError(e.message, e.code, res, req);
       }
       next(e);
     }
@@ -72,7 +72,7 @@ class PayComTransactionController {
         break;
 
       default:
-        this.sendError("Method not found", null, res);
+        throw new PayMeException(500, "Method not found");
     }
   }
 
@@ -81,7 +81,7 @@ class PayComTransactionController {
 
     this.checkIsValidAmount(req.body.params.amount);
 
-    return res.status(200).json({ allow: true });
+    return res.status(200).json(this.makeResponse(req, { allow: true }));
   };
 
   private async createTransaction(req: Request, res: Response, next: NextFunction) {
@@ -97,11 +97,11 @@ class PayComTransactionController {
         state: STATE_CREATED,
         amount: amount
       });
-      return res.status(200).json({
+      return res.status(200).json(this.makeResponse(req, {
         create_time: transaction.create_time,
         transaction: transaction.id,
         state: STATE_CREATED
-      } as Partial<ITransaction>);
+      }));
     } catch (e) {
       throw new PayMeException(-31008, "Server error");
     }
@@ -113,11 +113,11 @@ class PayComTransactionController {
       throw new PayMeException(-31003, "Transaction not found");
     }
     if (transaction.state === STATE_COMPLETED) {
-      return res.status(200).json({
+      return res.status(200).json(this.makeResponse(req, {
         perform_time: Number(transaction.perform_time),
         transaction: transaction.id,
         state: STATE_COMPLETED
-      } as Partial<ITransaction>);
+      }));
     }
 
     if (transaction.state != STATE_CREATED) {
@@ -140,15 +140,16 @@ class PayComTransactionController {
 
 
       await queryRunner.commitTransaction();
-      return res.status(200).json({
-        perform_time: Number(transaction.perform_time),
-        transaction: transaction.id,
-        state: STATE_COMPLETED
-      });
+      return res.status(200).json(this.makeResponse(req, {
+          perform_time: Number(transaction.perform_time),
+          transaction: transaction.id,
+          state: STATE_COMPLETED
+        }
+      ));
 
     } catch (e) {
       await queryRunner.rollbackTransaction();
-      this.sendError("Server error", -31008, res);
+      throw new PayMeException(-31008, "Server error");
     }
   }
 
@@ -174,12 +175,13 @@ class PayComTransactionController {
     }
 
 
-    return res.status(200).json({
-      cancel_time: transaction.cancel_time,
-      transaction: transaction.id,
-      state: transaction.state,
-      reason: transaction.reason
-    });
+    return res.status(200).json(this.makeResponse(req, {
+        cancel_time: transaction.cancel_time,
+        transaction: transaction.id,
+        state: transaction.state,
+        reason: transaction.reason
+      }
+    ));
   }
 
   private async checkTransaction(req: Request, res: Response, next: NextFunction) {
@@ -187,14 +189,15 @@ class PayComTransactionController {
     if (!transaction) {
       throw new PayMeException(-31003, "Transaction not found");
     }
-    return res.status(200).json({
-      create_time: transaction.create_time,
-      perform_time: transaction.perform_time,
-      cancel_time: transaction.cancel_time,
-      transaction: transaction.id,
-      state: transaction.state,
-      reason: transaction.reason || null
-    });
+    return res.status(200).json(this.makeResponse(req, {
+        create_time: transaction.create_time,
+        perform_time: transaction.perform_time,
+        cancel_time: transaction.cancel_time,
+        transaction: transaction.id,
+        state: transaction.state,
+        reason: transaction.reason || null
+      })
+    );
   }
 
   private async getStatement(req: Request, res: Response, next: NextFunction) {
@@ -222,9 +225,9 @@ class PayComTransactionController {
       receivers: t.receivers
     } as any));
 
-    return res.status(200).json({
+    return res.status(200).json(this.makeResponse(req, {
       ...transactions
-    });
+    }));
   }
 
   private checkIsValidAmount(amount: number) {
@@ -235,20 +238,9 @@ class PayComTransactionController {
     return !isNotValid;
   }
 
-  public sendError = (error = null, code = 500, res) => {
-    // if (!Array.isArray(error)) {
-    //   if (key_exists($error, this.t)) {
-    //     $error = this.t[$error];
-    //   } else {
-    //     $msg = $error;
-    //     $error = [];
-    //     $error['uz'] = $error['ru'] = $error['en'] = $msg;
-    //   }
-    // }
+  public sendError = (error = null, code = 200, res: Response, req: Request) => {
 
-    return res.status(500).send({ error, code });
-    // this.send(null, ['code' => $code, 'message' => $error]);
-    // throw new Error(error);
+    return res.status(200).send(this.makeResponse(req, null, { error, code }));
   };
 
   private async getAccount(account_number = null) {
@@ -263,6 +255,15 @@ class PayComTransactionController {
     const domain = "https://checkout.paycom.uz/";
     const encode = base64Decode(`m=${process.env.MERCHANT_ID};ac.host=${host};a=${(amount * 100)}`);
     return `${domain}${encode}`;
+  }
+
+  private makeResponse(req: Request, result: any, error?: any) {
+    return JSON.stringify({
+      jsonrpc: "2.0",
+      id: req.body.id,
+      result,
+      error
+    });
   }
 }
 
