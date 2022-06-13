@@ -20,9 +20,11 @@ class PayComTransactionController {
     try {
       if (!req.body) {
         throw new PayMeException(-32300, "Empty request");
+        return;
       }
       if (!this.isLoggedIn(req.headers)) {
         throw new PayMeException(-32504, "Incorrect login");
+        return;
       }
 
       await this.checkMethod(req, res, next);
@@ -98,8 +100,8 @@ class PayComTransactionController {
         amount: amount
       });
       return res.status(200).json(this.makeResponse(req, {
-        create_time: transaction.create_time,
-        transaction: transaction.id,
+        create_time: Number(transaction.create_time),
+        transaction: String(transaction.id),
         state: STATE_CREATED
       }));
     } catch (e) {
@@ -115,7 +117,7 @@ class PayComTransactionController {
     if (transaction.state === STATE_COMPLETED) {
       return res.status(200).json(this.makeResponse(req, {
         perform_time: Number(transaction.perform_time),
-        transaction: transaction.id,
+        transaction: String(transaction.id),
         state: STATE_COMPLETED
       }));
     }
@@ -142,7 +144,7 @@ class PayComTransactionController {
       await queryRunner.commitTransaction();
       return res.status(200).json(this.makeResponse(req, {
           perform_time: Number(transaction.perform_time),
-          transaction: transaction.id,
+          transaction: String(transaction.id),
           state: STATE_COMPLETED
         }
       ));
@@ -176,8 +178,8 @@ class PayComTransactionController {
 
 
     return res.status(200).json(this.makeResponse(req, {
-        cancel_time: transaction.cancel_time,
-        transaction: transaction.id,
+        cancel_time: Number(transaction.cancel_time),
+        transaction: String(transaction.id),
         state: transaction.state,
         reason: transaction.reason
       }
@@ -190,10 +192,10 @@ class PayComTransactionController {
       throw new PayMeException(-31003, "Transaction not found");
     }
     return res.status(200).json(this.makeResponse(req, {
-        create_time: transaction.create_time,
-        perform_time: transaction.perform_time,
-        cancel_time: transaction.cancel_time,
-        transaction: transaction.id,
+        create_time: Number(transaction.create_time),
+        perform_time: Number(transaction.perform_time),
+        cancel_time: Number(transaction.cancel_time),
+        transaction: String(transaction.id),
         state: transaction.state,
         reason: transaction.reason || null
       })
@@ -213,13 +215,13 @@ class PayComTransactionController {
 
     const transactions = transactionList.map(t => ({
       id: t.paycom_transaction_id,
-      time: t.create_time,
+      time: Number(t.create_time),
       amount: t.amount,
       account: { account: t.user.account_number },
-      create_time: t.create_time,
-      perform_time: t.perform_time,
-      cancel_time: t.cancel_time,
-      transaction: t.id,
+      create_time: Number(t.create_time),
+      perform_time: Number(t.perform_time),
+      cancel_time: Number(t.cancel_time),
+      transaction: String(t.id),
       state: t.state,
       reason: t.reason || null,
       receivers: t.receivers
@@ -238,9 +240,9 @@ class PayComTransactionController {
     return !isNotValid;
   }
 
-  public sendError = (error = null, code = 200, res: Response, req: Request) => {
+  public sendError = (message = null, code = 200, res: Response, req: Request) => {
 
-    return res.status(200).send(this.makeResponse(req, null, { error, code }));
+    return res.status(200).send(this.makeResponse(req, null, { message, code }));
   };
 
   private async getAccount(account_number = null) {
@@ -258,12 +260,12 @@ class PayComTransactionController {
   }
 
   private makeResponse(req: Request, result: any, error?: any) {
-    return JSON.stringify({
+    return {
       jsonrpc: "2.0",
       id: req.body.id,
       result,
       error
-    });
+    };
   }
 }
 

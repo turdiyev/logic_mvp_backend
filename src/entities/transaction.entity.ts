@@ -17,13 +17,13 @@ export class TransactionEntity extends BaseEntity implements ITransaction {
   @Column({ unique: true })
   paycom_transaction_id: string;
 
-  @Column({ type: "bigint", nullable: true })
+  @Column({ type: "bigint", nullable: true, default: 0 })
   paycom_time: number;
 
-  @Column({ type: "bigint" })
+  @Column({ type: "bigint", default: 0 })
   create_time: number;
 
-  @Column({ type: "bigint", nullable: true })
+  @Column({ type: "bigint", nullable: true, default: 0 })
   perform_time: number;
 
   @Column({ type: "bigint", nullable: true, default: 0 })
