@@ -4,7 +4,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, ManyToOne,   Generated, OneToMany
+  UpdateDateColumn, ManyToOne, Generated, OneToMany, BeforeInsert
 } from "typeorm";
 import { Tests as Test } from "@interfaces/test.interface";
 import { UserEntity } from "@entities/users.entity";
@@ -19,10 +19,6 @@ export enum Status {
 export class TestEntity extends BaseEntity implements Test {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column({ type: "uuid", unique: true })
-  @Generated("uuid")
-  name: string;
 
   @Column({ type: "enum", enum: Status, default: Status.PENDING })
   status: Status;
