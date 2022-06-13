@@ -25,7 +25,7 @@ class AuthService extends Repository<UserEntity> {
     const createUserData: User = await UserEntity.create({
       ...userData,
       password: hashedPassword,
-      account_number: (maxAccountNumber + 1) || 11982343
+      account_number: maxAccountNumber && (Number(maxAccountNumber) + 1) || 11982343
     }).save();
     return createUserData;
   }
