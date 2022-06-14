@@ -161,8 +161,8 @@ class PayComTransactionController {
     if (!transaction) {
       throw new PayMeException(-31003, "Transaction not found");
     }
-    const balance = await this.usersService.getUserBalance(transaction.user);
-    if (balance - Number(transaction.amount) < 0) {
+    const balance = await this.usersService.getUserBalance(transaction.user?.id);
+    if (balance - (Number(transaction.amount) / 100) < 0) {
       throw new PayMeException(31008, "This cancellation is not allowed");
     }
     if (transaction.state === STATE_CREATED) {

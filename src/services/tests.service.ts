@@ -9,6 +9,7 @@ import { User } from "@interfaces/users.interface";
 import moment from "moment";
 import ResultsService from "@services/results.service";
 import { Results } from "@interfaces/results.interface";
+import { TransactionEntity } from "@entities/transaction.entity";
 
 export interface TestWithStats extends Tests {
   stats?: { questionsCount: number; corrects: number; percentage: number };
@@ -39,6 +40,14 @@ class TestService extends Repository<TestEntity> {
     const createTestData: Tests = await TestEntity.create({ ...testData }).save();
 
     return createTestData;
+  }
+
+  public async getExpenseTotalByUserId(userId: number): Promise<number> {
+    const { total: userTotal } = await TestEntity.createQueryBuilder()
+      .select("SUM(paid_for_test)", "total")
+      .where({ user: { id: userId } })
+      .getRawOne() as { total: string };
+    return Number(userTotal || 0);
   }
 
   public generateTest = async (user: User, questionCount = 30): Promise<Tests> => {

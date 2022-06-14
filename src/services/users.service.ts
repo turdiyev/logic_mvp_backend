@@ -6,9 +6,14 @@ import { HttpException } from "@exceptions/HttpException";
 import { User } from "@interfaces/users.interface";
 import { isEmpty } from "@utils/util";
 import { WhereClause } from "typeorm/query-builder/WhereClause";
+import PaymeTransactionService from "@services/paymeTransaction.service";
+import TestService from "@services/tests.service";
 
 @EntityRepository()
 class UserService extends Repository<UserEntity> {
+  transactionService = new PaymeTransactionService();
+  testService = new TestService();
+
   public async findAllUser(): Promise<User[]> {
     const users: User[] = await UserEntity.find();
     return users;
@@ -21,17 +26,9 @@ class UserService extends Repository<UserEntity> {
     return findUser;
   }
 
-  public async getUserBalance(user: Partial<User>): Promise<number> {
-    const findUser: User = await UserEntity.findOne({ where: { ...user }, relations: ["tests", "transactions"] });
-
-    const paymentsTotal = findUser.transactions.filter(t => t.state === 2).reduce((sum, item) => {
-      sum += item.amount;
-      return sum;
-    }, findUser.initial_balance);
-    const expenseTotal = findUser.tests.reduce((sum, item) => {
-      sum += item.paid_for_test;
-      return sum;
-    }, 0);
+  public async getUserBalance(userId: number): Promise<number> {
+    const paymentsTotal = await this.transactionService.getTotalByUserId(userId);
+    const expenseTotal = await this.testService.getExpenseTotalByUserId(userId);
 
     return (paymentsTotal - expenseTotal) / 100;
   }

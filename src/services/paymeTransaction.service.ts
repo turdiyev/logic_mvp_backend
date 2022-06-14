@@ -6,7 +6,7 @@ import { TransactionEntity } from "@entities/transaction.entity";
 
 @EntityRepository()
 class PaymeTransactionService extends Repository<ITransaction> {
-  public async getList(options?:  FindManyOptions<TransactionEntity>): Promise<ITransaction[]> {
+  public async getList(options?: FindManyOptions<TransactionEntity>): Promise<ITransaction[]> {
     return await TransactionEntity.find(options);
   }
 
@@ -26,6 +26,15 @@ class PaymeTransactionService extends Repository<ITransaction> {
     if (!item) throw new HttpException(409, "You're not test");
 
     return item;
+  }
+
+  public async getTotalByUserId(userId: number): Promise<number> {
+    const { total: userTotal } = await TransactionEntity.createQueryBuilder()
+      .select("SUM(amount)", "total")
+      .where({ user: { id: userId } })
+      .andWhere({ state: 2 })
+      .getRawOne() as { total: string };
+    return Number(userTotal || 0);
   }
 
   public async getOrCreate(data: ITransaction): Promise<ITransaction> {

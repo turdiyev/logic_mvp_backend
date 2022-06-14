@@ -25,7 +25,7 @@ export default class AuthBotMiddlewares {
           user = await this.userController.getUserByTgId(ctx.from.id);
         }
         if (user?.id) {
-          const balance = await this.userService.getUserBalance({ id: user.id });
+          const balance = await this.userService.getUserBalance( user.id);
 
           const replyContent = this.welcomeCtx(user, balance);
           await ctx.replyWithHTML(replyContent.message, replyContent.extra);
@@ -56,7 +56,7 @@ export default class AuthBotMiddlewares {
     };
     const createUserData: User = await this.authController.signInOrUp(userData);
     ctx.session.currentUser = createUserData;
-    const balance = await this.userService.getUserBalance({ id: createUserData.id });
+    const balance = await this.userService.getUserBalance(createUserData.id);
     const replyContent = this.welcomeCtx(createUserData, balance, true);
     ctx.replyWithHTML(replyContent.message, replyContent.extra);
     BotUtils.answerCBQuery(ctx);
