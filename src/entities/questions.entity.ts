@@ -27,7 +27,7 @@ export class QuestionEntity extends BaseEntity implements IQuestions {
   @Column({ type: "enum", enum: TypeEnum, default: TypeEnum.PAID })
   type: TypeEnum;
 
-  @Column()
+  @Column({unique:true})
   origin_test_name: string;
 
   @Column()

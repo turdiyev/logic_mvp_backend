@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from "typeorm";
+import { EntityRepository, MoreThan, Repository } from "typeorm";
 import { CreateTestsDto } from "@dtos/tests.dto";
 import { Status, TestEntity as TestEntity } from "@entities/test.entity";
 import { HttpException } from "@exceptions/HttpException";
@@ -9,7 +9,7 @@ import { User } from "@interfaces/users.interface";
 import moment from "moment";
 import ResultsService from "@services/results.service";
 import { Results } from "@interfaces/results.interface";
-import { TransactionEntity } from "@entities/transaction.entity";
+import { TypeEnum } from "@interfaces/questions.interface";
 
 export interface TestWithStats extends Tests {
   stats?: { questionsCount: number; corrects: number; percentage: number };
@@ -34,7 +34,7 @@ class TestService extends Repository<TestEntity> {
     return findTest;
   }
 
-  public async createTest(testData: CreateTestsDto): Promise<Tests> {
+  public async createTest(testData: Tests): Promise<Tests> {
     if (isEmpty(testData)) throw new HttpException(400, "You're not testData");
 
     const createTestData: Tests = await TestEntity.create({ ...testData }).save();
@@ -50,28 +50,43 @@ class TestService extends Repository<TestEntity> {
     return Number(userTotal || 0);
   }
 
-  public generateTest = async (user: User, questionCount = 30): Promise<Tests> => {
+  public generateTest = async (user: User, questionCount = 30, type: TypeEnum = TypeEnum.PAID): Promise<Tests> => {
     try {
-      const data: Partial<Tests> = {
+      const test = await TestEntity.findOne({ user: { id: user.id } });
+
+      const createdTest = await this.createTest({
         status: Status.PENDING,
-        user,
-        paid_for_test: 20000 * 100
-      };
-
-      const createdTest = await TestEntity.create(data).save();
+        user
+      });
       const results: Results[] = [];
-      for await (const [ind] of [...Array(questionCount).entries()]) {
-        const question = await this.questionService.getRandomQuestion(ind + 1, user);
-        if (isEmpty(question)) throw new Error("Random questions not found");
+      if (!Boolean(test)) {
+        const sampleQuestions = await this.questionService.getSampleQuestions(30);
+        for await (const question of sampleQuestions) {
+          const resultPayload: Results = {
+            question,
+            test: createdTest,
+            selected_option: null
+          };
+          const result = await this.resultService.createResult(resultPayload);
+          results.push(result);
+        }
+      } else {
+        for await (const [ind] of [...Array(questionCount).entries()]) {
+          const question = await this.questionService.getRandomPaidQuestion(ind + 1, user.id);
+          if (isEmpty(question)) throw new Error("Random questions not found");
 
-        const resultPayload: Results = {
-          question,
-          test: createdTest,
-          selected_option: null
-        };
-        const result = await this.resultService.createResult(resultPayload);
-        results.push(result);
+          const resultPayload: Results = {
+            question,
+            test: createdTest,
+            selected_option: null
+          };
+          const result = await this.resultService.createResult(resultPayload);
+          results.push(result);
+        }
       }
+      await this.updateTest(createdTest.id, {
+        paid_for_test: 20000 * 100
+      });
 
       return { ...createdTest, results };
     } catch (e) {
@@ -106,11 +121,8 @@ class TestService extends Repository<TestEntity> {
     }
   }
 
-  public async updateTest(testId: number, testData: CreateTestsDto): Promise<Tests> {
-    if (isEmpty(testData)) throw new HttpException(400, "You're not testData");
-
-    const updateTest: Tests = await TestEntity.findOne({ where: { id: testId } });
-    return updateTest;
+  public async updateTest(testId: number, testData: Partial<Tests>): Promise<void> {
+    await TestEntity.update(testId, testData);
   }
 
   public async deleteTest(testId: number): Promise<Tests> {

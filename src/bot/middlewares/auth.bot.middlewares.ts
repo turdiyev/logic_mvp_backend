@@ -5,12 +5,10 @@ import BotAuthController from "@/bot/controller/botAuth.controller";
 import { MyContext } from "@/bot/bot.interfaces";
 import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
 import BotUtils from "@/bot/utils/BotUtils";
-import usersController from "@/bot/controller/users.controller";
 import usersService from "@services/users.service";
 
 export default class AuthBotMiddlewares {
   public authController = new BotAuthController();
-  public userController = new usersController();
   public userService = new usersService();
 
   public welcome = async (ctx: MyContext) => {
@@ -22,10 +20,11 @@ export default class AuthBotMiddlewares {
       try {
         let user = ctx.session.currentUser;
         if (!user?.id) {
-          user = await this.userController.getUserByTgId(ctx.from.id);
+          user = await this.userService.findUserByTgId(ctx.from.id);
+          ctx.session.currentUser = user;
         }
         if (user?.id) {
-          const balance = await this.userService.getUserBalance( user.id);
+          const balance = await this.userService.getUserBalance(user);
 
           const replyContent = this.welcomeCtx(user, balance);
           await ctx.replyWithHTML(replyContent.message, replyContent.extra);
@@ -56,7 +55,7 @@ export default class AuthBotMiddlewares {
     };
     const createUserData: User = await this.authController.signInOrUp(userData);
     ctx.session.currentUser = createUserData;
-    const balance = await this.userService.getUserBalance(createUserData.id);
+    const balance = await this.userService.getUserBalance(createUserData);
     const replyContent = this.welcomeCtx(createUserData, balance, true);
     ctx.replyWithHTML(replyContent.message, replyContent.extra);
     BotUtils.answerCBQuery(ctx);

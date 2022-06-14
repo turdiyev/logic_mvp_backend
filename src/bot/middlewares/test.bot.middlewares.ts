@@ -4,22 +4,22 @@ import TestController from "@/bot/controller/test.bot.controller";
 import { Tests } from "@interfaces/test.interface";
 import ResultsBotController from "@/bot/controller/results.bot.controller";
 import moment from "moment";
-import { TestWithStats } from "@services/tests.service";
+import testsService, { TestWithStats } from "@services/tests.service";
 import BotUtils from "@/bot/utils/BotUtils";
 import usersService from "@services/users.service";
 
 export default class BotTestAction {
-  public testController = new TestController();
   public resultController = new ResultsBotController();
   public userService = new usersService();
+  public testService = new testsService();
 
   public startTest = async (ctx: MyContext, next) => {
     try {
-      const balance = await this.userService.getUserBalance(ctx.session.currentUser.id);
+      const balance = await this.userService.getUserBalance(ctx.session.currentUser);
 
       if (balance >= 20000) {
-        const test = await this.testController.generateTest(ctx.session.currentUser, 30);
-
+        const test = await this.testService.generateTest(ctx.session.currentUser, 30);
+        console.log("creted test -- ", JSON.stringify(test, null, 3));
         BotUtils.answerCBQuery(ctx, "Test boshlandi");
         ctx.session.curTest = test as Tests;
         ctx.session.questionsQueue = test.results.map(r => r.question);
@@ -46,19 +46,18 @@ export default class BotTestAction {
 
 
   public nextQuestion = async (ctx: MyContext, next: any) => {
-    console.log("nex---", JSON.stringify(ctx, null, 3));
     const prev_selected_option = (ctx.update as any)?.message?.text || ctx.callbackQuery?.data?.[0];
     const curTest = ctx.session.curTest;
     if (!curTest) {
-      BotUtils.answerCBQuery(ctx);
+      // BotUtils.answerCBQuery(ctx);
       return;
     }
-    BotUtils.answerCBQuery(ctx);
+    // BotUtils.answerCBQuery(ctx);
     const questionsCount = curTest.results.length;
     const question = ctx.session.questionsQueue.shift();
 
     if (question?.number <= questionsCount) {
-      await ctx.replyWithPhoto({ source: `./uploads/${question.image}` }, {
+      ctx.replyWithPhoto({ source: `./uploads/${question.image}` }, {
         caption: `<strong>${question.number}-savol:</strong>`,
         parse_mode: "HTML",
         ...Markup.keyboard([
@@ -69,11 +68,11 @@ export default class BotTestAction {
           ]
         ]).oneTime().resize()
       });
-      if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);//del prev msg
+      // if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);//del prev msg
 
       if (curTest.results[question.number - 2]?.question) {
         const prevQuestion = curTest.results[question.number - 2].question;
-        await this.resultController.saveOptionToResultQuestion(curTest, prevQuestion, prev_selected_option);
+        this.resultController.saveOptionToResultQuestion(curTest, prevQuestion, prev_selected_option);
       }
     } else {
       this.completeTest(ctx);
@@ -91,7 +90,7 @@ export default class BotTestAction {
       if (results[count - 1]?.question) {
         const lastQuestion = results[count - 1].question;
         await this.resultController.saveOptionToResultQuestion(curTest, lastQuestion, prev_selected_option);
-        const completedTest: TestWithStats = await this.testController.completeTest(curTest.id);
+        const completedTest: TestWithStats = await this.testService.completeTest(curTest.id);
 
         ctx.session.curTest = completedTest;
         ctx.session.questionsQueue = [];

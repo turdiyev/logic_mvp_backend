@@ -26,24 +26,27 @@ class UserService extends Repository<UserEntity> {
     return findUser;
   }
 
-  public async getUserBalance(userId: number): Promise<number> {
-    const paymentsTotal = await this.transactionService.getTotalByUserId(userId);
-    const expenseTotal = await this.testService.getExpenseTotalByUserId(userId);
+  public async getUserBalance(user: User): Promise<number> {
+    const paymentsTotal = await this.transactionService.getTotalByUserId(user.id);
+    const expenseTotal = await this.testService.getExpenseTotalByUserId(user.id);
 
-    return (paymentsTotal - expenseTotal) / 100;
+    return (user.initial_balance + paymentsTotal - expenseTotal) / 100;
   }
 
   public async findUserById(userId: number): Promise<User> {
     if (isEmpty(userId)) throw new HttpException(400, "You're not userId");
 
-    const findUser: User = await UserEntity.findOne({ where: { id: userId } });
+    const findUser: User = await UserEntity.findOne({ where: { id: userId }, relations: ["tests"] });
     if (!findUser) throw new HttpException(409, "You're not user");
 
     return findUser;
   }
 
   public async findUserByTgId(telegramUserId: number): Promise<User> {
-    const findUser: User = await UserEntity.findOne({ where: { telegram_user_id: Number(telegramUserId) } });
+    const findUser: User = await UserEntity.findOne({
+      where: { telegram_user_id: Number(telegramUserId) },
+      relations: ["tests"]
+    });
     if (!findUser) throw new HttpException(409, "You're not user");
 
     return findUser;

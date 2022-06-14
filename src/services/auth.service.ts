@@ -49,7 +49,7 @@ class AuthService extends Repository<UserEntity> {
     try {
       if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
 
-      let findUser: User = await UserEntity.findOne({ where: { username: userData.username } });
+      let findUser: User = await UserEntity.findOne({ where: { username: userData.username } ,relations:["tests"]});
       if (!findUser) {
         findUser = await this.signup(userData);
       }

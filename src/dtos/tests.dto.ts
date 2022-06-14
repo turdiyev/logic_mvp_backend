@@ -7,4 +7,5 @@ export class CreateTestsDto {
 
   @IsString()
   public name: string;
+
 }
