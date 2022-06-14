@@ -25,11 +25,14 @@ export default class BotTestAction {
         ctx.session.questionsQueue = test.results.map(r => r.question);
         this.nextQuestion(ctx, next);
       } else {
-        ctx.replyWithHTML("Sizning hisobingizda yetarlicha mablag’ majvud emas.\n\n" +
-          "Yangi test yechish uchun hisobingizni to’ldiring. \n\n" +
-          "Hisobni to’ldirgandan keyin testni boshlash tugmasini bosing.\n" +
-          "\n<strong>Eslatma!</strong>\n" +
-          "30 ta savoldan iborat 1 ta testni yechish narxi 20000 so’m",
+        ctx.replyWithHTML(`Sizning hisobingizda yetarlicha mablag’ majvud emas.
+
+Yangi test yechish uchun hisobingizni to’ldiring.
+
+Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
+
+<strong>Eslatma!</strong>
+30 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`,
           Markup.keyboard([
             [Markup.button.callback("Testni boshlash", "start_test_action"),
               Markup.button.callback("Bosh sahifaga qaytish", "go_home")]
@@ -58,7 +61,7 @@ export default class BotTestAction {
 
     if (question?.number <= questionsCount) {
       ctx.replyWithPhoto({ source: `./uploads/${question.image}` }, {
-        caption: `<strong>${question.number}-savol:</strong>`,
+        caption: `<strong>${question.number}-savol</strong> ${question.public_code ? `<code>(${question.public_code})</code>` : ""}`,
         parse_mode: "HTML",
         ...Markup.keyboard([
           [Markup.button.callback("A", "a_option_selected_action"),

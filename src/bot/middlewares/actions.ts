@@ -11,7 +11,8 @@ export default function initActions(bot) {
   bot.action("register_action", authActions.register);
   bot.action("start_test_action", testActions.startTest);
   bot.action("open_results", resultsActions.openResults);
+  bot.action("open_results", resultsActions.openResults);
   // bot.action("Javobni ko'rish", resultsActions.openResults);
 
-  bot.action(/^([a-z])_option_selected_action$/, testActions.nextQuestion);
+  bot.action(/^open_test_result_(\d+)$/, resultsActions.openTestResultItem);
 }

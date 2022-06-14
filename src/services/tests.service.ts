@@ -1,4 +1,4 @@
-import { EntityRepository, MoreThan, Repository } from "typeorm";
+import { EntityRepository, FindOneOptions, MoreThan, Repository } from "typeorm";
 import { CreateTestsDto } from "@dtos/tests.dto";
 import { Status, TestEntity as TestEntity } from "@entities/test.entity";
 import { HttpException } from "@exceptions/HttpException";
@@ -29,6 +29,14 @@ class TestService extends Repository<TestEntity> {
     if (isEmpty(testId)) throw new HttpException(400, "You're not testId");
 
     const findTest: Tests = await TestEntity.findOne({ where: { id: testId } });
+    if (!findTest) throw new HttpException(409, "You're not test");
+
+    return findTest;
+  }
+
+  public async findTestItem(options:FindOneOptions<any>): Promise<Tests> {
+
+    const findTest: Tests = await TestEntity.findOne(options);
     if (!findTest) throw new HttpException(409, "You're not test");
 
     return findTest;

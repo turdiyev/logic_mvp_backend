@@ -1,10 +1,10 @@
 export interface Questions {
-  id: number;
+  id?: number;
   number: number;
   image: string;
   correct_answer: OptionsEnum;
   type: TypeEnum;
-  origin_test_name: string;
+  public_code: string;
 }
 
 export enum OptionsEnum {

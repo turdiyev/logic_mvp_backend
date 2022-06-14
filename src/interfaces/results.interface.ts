@@ -9,4 +9,5 @@ export interface Results {
   question?: Questions;
   test_id?: number;
   question_id?: number;
+  completed_time?: number;
 }

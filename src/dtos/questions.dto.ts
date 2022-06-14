@@ -12,7 +12,7 @@ export class CreateQuestionsDto {
   public type: TypeEnum;
 
   @IsString()
-  public origin_test_name: string;
+  public public_code: string;
 
   @IsString()
   public image: string;

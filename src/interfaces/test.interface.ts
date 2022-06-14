@@ -7,6 +7,8 @@ export interface Tests {
   name?: string;
   status: Status;
   completedAt?: Date;
+  createdAtAt?: Date;
+  updatedAt?: Date;
   user: User;
   results?: Results[];
   paid_for_test?: number;

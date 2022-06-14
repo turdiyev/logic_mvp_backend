@@ -34,7 +34,7 @@ export default class AuthBotMiddlewares {
       } catch (e) {
         if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);
         await ctx.reply("Prezident va al-Xorazmiy maktablarining kirish imtihonlariga tayyorgarlik testlari botiga hush kelibsiz!", Markup.keyboard([
-            Markup.button.callback("Royxatdan otish", "register_action")
+            Markup.button.callback("Ro`yxatdan o`tish", "register_action")
           ]).resize().oneTime()
         );
       }
@@ -67,11 +67,11 @@ export default class AuthBotMiddlewares {
 Sizning ID raqamingiz: <code>${createUserData.account_number}</code>\n
 Sizning balans: ${balance} so’m\n
 <strong>Eslatma!</strong>
-30 ta savoldan iborat 1 ta
-testni yechish narxi 20000 so’m`,
+330 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`,
       extra:
         Markup.keyboard([
-          Markup.button.callback("Testni boshlash", "start_test_action")
+          Markup.button.callback("Testni boshlash", "start_test_action"),
+          Markup.button.callback("Yechilgan teshlar", "start_test_action"),
         ]).oneTime().resize()
     };
   }

@@ -60,7 +60,7 @@ class QuestionsService extends Repository<QuestionEntity> {
     }
   }
 
-  public async createQuestion(questionData: CreateQuestionsDto): Promise<Questions> {
+  public async createQuestion(questionData: Questions): Promise<Questions> {
     if (isEmpty(questionData)) throw new HttpException(400, "You're not questionData");
 
     const createQuestionData: Questions = await QuestionEntity.create({ ...questionData }).save();

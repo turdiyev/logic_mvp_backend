@@ -35,13 +35,15 @@ class QuestionsController {
         const fileItem: Express.Multer.File = req.files[file];
         const isSample = fileItem.originalname.includes("sample");
         const originalName = fileItem.originalname;
-        const chunks = originalName.replace("sample_", "").split("_");
-        const questionData: CreateQuestionsDto = {
-          number: Number(chunks[1]),
+        const chunks = originalName.replace("sample_", "").replace(".jpg", "").split("_");
+        const number = Number(chunks[1])
+        const testNumber= chunks[3].slice(1)
+        const questionData: Questions = {
+          number,
           correct_answer: chunks[2] as OptionsEnum,
           image: fileItem.filename,
           type: isSample ? TypeEnum.SAMPLE : TypeEnum.PAID,
-          origin_test_name: originalName
+          public_code: `${testNumber}-${number}`,
         };
 
         const createQuestionData: Questions = await this.questionService.createQuestion(questionData);
