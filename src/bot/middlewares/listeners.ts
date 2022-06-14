@@ -17,7 +17,7 @@ export default function initListeners(bot: Telegraf<MyContext>) {
 
   bot.hears("Javobni ko'rish", resultsActions.openResults);
   bot.hears("Yangi Test", testActions.startTest);
-  bot.hears(/^(A|B|C|D)$/, testActions.nextQuestion);
+  bot.hears(/^([ABCDabcd])$/i, testActions.nextQuestion);
 
   bot.help((ctx) => ctx.reply("Send me a sticker"));
   bot.on("sticker", (ctx) => ctx.reply("👍"));
