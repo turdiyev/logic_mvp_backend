@@ -151,7 +151,7 @@ class PayComTransactionController {
 
     } catch (e) {
       await queryRunner.rollbackTransaction();
-      throw new PayMeException(-31008, "Server error");
+      throw new PayMeException(-31008, "Unable to perform operation");
     }
   }
 
@@ -162,8 +162,9 @@ class PayComTransactionController {
       throw new PayMeException(-31003, "Transaction not found");
     }
     const balance = await this.usersService.getUserBalance(transaction.user);
+    console.log("______ Cancel transaction -", balance, transaction.amount, balance - (Number(transaction.amount) / 100));
     if (balance - (Number(transaction.amount) / 100) < 0) {
-      throw new PayMeException(31008, "This cancellation is not allowed");
+      throw new PayMeException(-31007, "This cancellation is not allowed");
     }
     if (transaction.state === STATE_CREATED) {
       transaction = await this.transactionService.updateItem(transaction.id, {

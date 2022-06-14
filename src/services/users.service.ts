@@ -29,7 +29,7 @@ class UserService extends Repository<UserEntity> {
   public async getUserBalance(user: User): Promise<number> {
     const paymentsTotal = await this.transactionService.getTotalByUserId(user.id);
     const expenseTotal = await this.testService.getExpenseTotalByUserId(user.id);
-
+    console.log("getUserBalance - ", (user.initial_balance + paymentsTotal - expenseTotal) / 100 , user.initial_balance, paymentsTotal, expenseTotal);
     return (user.initial_balance + paymentsTotal - expenseTotal) / 100;
   }
 
