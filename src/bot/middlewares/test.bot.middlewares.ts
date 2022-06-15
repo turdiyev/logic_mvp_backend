@@ -24,21 +24,25 @@ export default class BotTestAction {
         ctx.session.questionsQueue = test.results.map(r => r.question);
         this.nextQuestion(ctx, next);
       } else {
-        ctx.replyWithHTML(`Sizning hisobingizda yetarlicha mablag’ majvud emas.
+        const user = await this.userService.findUserByTgId(ctx.from.id);
+        ctx.replyWithHTML(`<strong>Sizning hisobingizda yetarlicha mablag’ majvud emas.</strong>
 
 Yangi test yechish uchun hisobingizni to’ldiring.
+Sizning ID raqamingiz: <code>${user.account_number}</code>
 
 Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
 
 <a href="https://telegra.ph/Hisobni-toldirish-06-15">Hisobni qanday to'ldirish mumkin?</a>
 
 <strong>Eslatma!</strong>
-30 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`,
-          Markup.keyboard([
+30 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`, {
+          disable_web_page_preview: true,
+
+          ...Markup.keyboard([
             [Markup.button.callback("Testni boshlash", "start_test_action"),
               Markup.button.callback("Bosh sahifaga qaytish", "go_home")]
-          ]).oneTime().resize(true));
-
+          ]).oneTime().resize(true)
+        });
       }
 
     } catch (e) {

@@ -50,7 +50,7 @@ export default class AuthBotMiddlewares {
       password: "Test_2@22"
     };
     const createUserData: User = await this.authService.signUpOrIn(userData);
-    ctx.session.currentUser = createUserData;
+    ctx.session.curUserId = createUserData.id;
 
     const balance = await this.userService.getUserBalanceInSOM(ctx.from.id);
 
