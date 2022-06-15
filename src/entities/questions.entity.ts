@@ -30,6 +30,9 @@ export class QuestionEntity extends BaseEntity implements IQuestions {
   @Column({ unique: true })
   public_code: string;
 
+  @Column({ unique: true })
+  test_code: string;
+
   @Column()
   image: string;
 

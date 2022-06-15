@@ -44,6 +44,7 @@ class QuestionsController {
           image: fileItem.filename,
           type: isSample ? TypeEnum.SAMPLE : TypeEnum.PAID,
           public_code: `${testNumber}-${number}`,
+          test_code: testNumber,
         };
 
         const createQuestionData: Questions = await this.questionService.createQuestion(questionData);

@@ -5,6 +5,7 @@ export interface Questions {
   correct_answer: OptionsEnum;
   type: TypeEnum;
   public_code: string;
+  test_code: string;
 }
 
 export enum OptionsEnum {
