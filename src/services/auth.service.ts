@@ -45,7 +45,7 @@ class AuthService extends Repository<UserEntity> {
     return { cookie, findUser };
   }
 
-  public async signUpOrIn(userData: CreateUserDto): Promise<{ cookie: string; findUser: User }> {
+  public async signUpOrIn(userData: CreateUserDto): Promise<User> {
     try {
       if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
 
@@ -59,7 +59,7 @@ class AuthService extends Repository<UserEntity> {
 
       // const tokenData = this.createToken(findUser);
       // const cookie = this.createCookie(tokenData);
-      return { cookie: null, findUser };
+      return findUser;
     } catch (e) {
       throw new Error(e);
     }

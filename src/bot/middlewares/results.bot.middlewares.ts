@@ -4,7 +4,6 @@ import { Results } from "@interfaces/results.interface";
 import TestService from "@services/tests.service";
 import moment from "moment";
 import { DATE_TIME_FORMAT } from "@config";
-import { Status } from "@entities/test.entity";
 
 export default class ResultsBotMiddlewares {
   public testService = new TestService();
@@ -19,7 +18,7 @@ export default class ResultsBotMiddlewares {
           .format(DATE_TIME_FORMAT)}`, `open_test_result_${test.id}`)
       ]);
     });
-    await ctx.replyWithHTML(`Men yechgan testlar`, {
+    await ctx.replyWithHTML(`Yechilgan testlar ${inlineButtons.length? `${inlineButtons.length} ta`: 'mavjud emas'}`, {
       parse_mode: "HTML",
       ...Markup.inlineKeyboard(inlineButtons),
       ...Markup.keyboard([
@@ -34,7 +33,7 @@ export default class ResultsBotMiddlewares {
     for await(const result of results) {
       await this.postResultItem(ctx, result);
     }
-    ctx.reply("Natijalaringizni yuqorida ko'rishiz mumkin. Yana test ishlash uchun menyudagi 'Yangi Test' tugmasini bosing.", Markup.keyboard([
+    ctx.reply("Natijalaringizni yuqorida ko'rishiz mumkin.", Markup.keyboard([
       Markup.button.callback("Bosh sahifaga qaytish", "go_home")
     ]).resize());
   };

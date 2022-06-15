@@ -1,26 +1,25 @@
 import { Markup } from "telegraf";
 import { MyContext } from "@/bot/bot.interfaces";
-import TestController from "@/bot/controller/test.bot.controller";
 import { Tests } from "@interfaces/test.interface";
-import ResultsBotController from "@/bot/controller/results.bot.controller";
 import moment from "moment";
 import testsService, { TestWithStats } from "@services/tests.service";
 import BotUtils from "@/bot/utils/BotUtils";
 import usersService from "@services/users.service";
+import resultsService from "@services/results.service";
+import { ONE_TEST_PRICE } from "@config";
 
 export default class BotTestAction {
-  public resultController = new ResultsBotController();
+  public resultsService = new resultsService();
   public userService = new usersService();
   public testService = new testsService();
 
   public startTest = async (ctx: MyContext, next) => {
     try {
-      const balance = await this.userService.getUserBalanceInSOM(ctx.session.currentUser);
+      const balance = await this.userService.getUserBalanceInSOM(ctx.from.id);
 
-      if (balance >= 20000) {
+      if (balance >= ONE_TEST_PRICE) {
         const test = await this.testService.generateTest(ctx.session.currentUser, 30);
-        console.log("creted test -- ", JSON.stringify(test, null, 3));
-        BotUtils.answerCBQuery(ctx, "Test boshlandi");
+        // BotUtils.answerCBQuery(ctx, "Test boshlandi");
         ctx.session.curTest = test as Tests;
         ctx.session.questionsQueue = test.results.map(r => r.question);
         this.nextQuestion(ctx, next);
@@ -30,6 +29,8 @@ export default class BotTestAction {
 Yangi test yechish uchun hisobingizni to’ldiring.
 
 Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
+
+<a href="https://telegra.ph/Hisobni-toldirish-06-15">Hisobni qanday to'ldirish mumkin?</a>
 
 <strong>Eslatma!</strong>
 30 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`,
@@ -75,7 +76,8 @@ Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
 
       if (curTest.results[question.number - 2]?.question) {
         const prevQuestion = curTest.results[question.number - 2].question;
-        this.resultController.saveOptionToResultQuestion(curTest, prevQuestion, prev_selected_option);
+        this.resultsService.saveByQuestion(curTest.id, prevQuestion.id, prev_selected_option.toLowerCase());
+
       }
     } else {
       this.completeTest(ctx);
@@ -92,7 +94,7 @@ Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
 
       if (results[count - 1]?.question) {
         const lastQuestion = results[count - 1].question;
-        await this.resultController.saveOptionToResultQuestion(curTest, lastQuestion, prev_selected_option);
+        await this.resultsService.saveByQuestion(curTest.id, lastQuestion.id, prev_selected_option.toLowerCase());
         const completedTest: TestWithStats = await this.testService.completeTest(curTest.id);
 
         ctx.session.curTest = completedTest;

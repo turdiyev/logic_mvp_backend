@@ -1,15 +1,15 @@
 import { CreateUserDto } from "@dtos/users.dto";
 import { User } from "@interfaces/users.interface";
 import { Markup } from "telegraf";
-import BotAuthController from "@/bot/controller/botAuth.controller";
 import { MyContext } from "@/bot/bot.interfaces";
 import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
-import usersService from "@services/users.service";
+import UsersService from "@services/users.service";
 import { toPriceFormat } from "@utils/paymentUtils";
+import AuthService from "@services/auth.service";
 
 export default class AuthBotMiddlewares {
-  public authController = new BotAuthController();
-  public userService = new usersService();
+  public authService = new AuthService();
+  public userService = new UsersService();
 
   public welcome = async (ctx: MyContext) => {
     try {
@@ -24,7 +24,7 @@ export default class AuthBotMiddlewares {
           ctx.session.currentUser = user;
         }
         if (user?.id) {
-          const balance = await this.userService.getUserBalanceInSOM(user);
+          const balance = await this.userService.getUserBalanceInSOM(ctx.from.id);
 
           const replyContent = this.welcomeCtx(user, balance);
           await ctx.replyWithHTML(replyContent.message, replyContent.extra);
@@ -53,12 +53,14 @@ export default class AuthBotMiddlewares {
       json_data: JSON.stringify(from),
       password: "Test_2@22"
     };
-    const createUserData: User = await this.authController.signInOrUp(userData);
+    const createUserData: User = await this.authService.signUpOrIn(userData);
     ctx.session.currentUser = createUserData;
-    const balance = await this.userService.getUserBalanceInSOM(createUserData);
+
+    const balance = await this.userService.getUserBalanceInSOM(ctx.from.id);
+
     const replyContent = this.welcomeCtx(createUserData, balance, true);
+
     ctx.replyWithHTML(replyContent.message, replyContent.extra);
-    // BotUtils.answerCBQuery(ctx);
   };
 
   private welcomeCtx(createUserData: User, balance: number, isNewUser = false): { message: string, extra: ExtraReplyMessage } {
@@ -67,7 +69,7 @@ export default class AuthBotMiddlewares {
 Sizning ID raqamingiz: <code>${createUserData.account_number}</code>\n
 Sizning balans: ${toPriceFormat(balance)} so’m\n
 <strong>Eslatma!</strong>
-330 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`,
+30 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`,
       extra:
         Markup.keyboard([
           Markup.button.callback("Testni boshlash", "start_test_action"),

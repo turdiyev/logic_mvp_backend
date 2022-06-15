@@ -27,11 +27,17 @@ class UserService extends Repository<UserEntity> {
     return findUser;
   }
 
-  public async getUserBalanceInSOM(user: User): Promise<number> {
+  public async getUserBalanceInSOM(userTelegramId: number): Promise<number> {
+    const user = await UserEntity.createQueryBuilder()
+      .select(['id', 'initial_balance'])
+      .where({ telegram_user_id: userTelegramId })
+      .getRawOne();
     const paymentsTotal = await this.transactionService.getTotalByUserId(user.id);
     const expenseTotal = await this.testService.getExpenseTotalByUserId(user.id);
 
-    return parseToSOM(user.initial_balance + paymentsTotal - expenseTotal);
+    const bonusBalance = Number(user.initial_balance);
+    console.log("Get user balance --- ", JSON.stringify(user), bonusBalance, user.id);
+    return parseToSOM(bonusBalance + paymentsTotal - expenseTotal);
   }
 
   public async findUserById(userId: number): Promise<User> {

@@ -13,5 +13,5 @@ export function parseTiyinToSOMString(priceInTiyin) {
 }
 
 export function toPriceFormat(number, fractionDigits = 0) {
-  return (number).toFixed(fractionDigits).replace(/\d(?=(\d{3})+\.)/g, "$& ");
+  return Number(number).toFixed(fractionDigits).replace(/(\d)(?=(\d{3})+\b)/g, "$1 ");
 }

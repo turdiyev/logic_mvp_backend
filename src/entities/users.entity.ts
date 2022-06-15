@@ -12,6 +12,8 @@ import { User } from "@interfaces/users.interface";
 import { QuestionEntity } from "@entities/questions.entity";
 import { TestEntity } from "@entities/test.entity";
 import { TransactionEntity } from "@entities/transaction.entity";
+import { parseToTiyin } from "@utils/paymentUtils";
+import { ONE_TEST_PRICE } from "@config";
 
 @Entity("users")
 export class UserEntity extends BaseEntity implements User {
@@ -48,7 +50,7 @@ export class UserEntity extends BaseEntity implements User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @Column({ default: 2000000 })
+  @Column({ default: parseToTiyin(ONE_TEST_PRICE) })
   initial_balance: number;
 
   @Column({ type: "json", nullable: true })

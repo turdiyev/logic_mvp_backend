@@ -11,6 +11,7 @@ import ResultsService from "@services/results.service";
 import { Results } from "@interfaces/results.interface";
 import { TypeEnum } from "@interfaces/questions.interface";
 import { parseToSOM, parseToTiyin } from "@utils/paymentUtils";
+import { ONE_TEST_PRICE } from "@config";
 
 export interface TestWithStats extends Tests {
   stats?: { questionsCount: number; corrects: number; percentage: number };
@@ -74,6 +75,8 @@ class TestService extends Repository<TestEntity> {
       if (!Boolean(test)) {
         //user's first test condition
         const sampleQuestions = await this.questionService.getSampleQuestions(30);
+        if (sampleQuestions.length !== questionCount) throw new Error("Sample questions is not found");
+
         for await (const question of sampleQuestions) {
           const resultPayload: Results = {
             question,
@@ -97,10 +100,10 @@ class TestService extends Repository<TestEntity> {
           results.push(result);
         }
       }
-      if (results.length != questionCount) throw new Error("Questions is not found");
+      if (results.length !== questionCount) throw new Error("Questions is not found");
 
       await this.updateTest(createdTest.id, {
-        paid_for_test: parseToTiyin(20000)
+        paid_for_test: parseToTiyin(ONE_TEST_PRICE)
       });
 
       return { ...createdTest, results };

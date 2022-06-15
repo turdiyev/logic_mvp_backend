@@ -162,7 +162,7 @@ class PayComTransactionController {
       throw new PayMeException(-31003, "Transaction not found");
     }
 
-    const balance = await this.usersService.getUserBalanceInSOM(transaction.user);
+    const balance = await this.usersService.getUserBalanceInSOM(transaction.user.telegram_user_id);
     if (balance - parseToSOM(transaction.amount) < 0) {
       throw new PayMeException(-31007, "This cancellation is not allowed");
     }
