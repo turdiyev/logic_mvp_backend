@@ -4,9 +4,11 @@ import { Results } from "@interfaces/results.interface";
 import TestService from "@services/tests.service";
 import moment from "moment";
 import { DATE_TIME_FORMAT } from "@config";
+import resultsService from "@services/results.service";
 
 export default class ResultsBotMiddlewares {
   public testService = new TestService();
+  public resultsService = new resultsService();
 
   public myResults = async (ctx: MyContext, next: any) => {
     const allTests = await this.testService.findUserTestsByTgId(ctx.from.id);
@@ -24,12 +26,14 @@ export default class ResultsBotMiddlewares {
     });
   };
   public openResults = async (ctx: MyContext, next: any) => {
+    console.log('open Rsult ctx - ', JSON.stringify(ctx, null, 3))
     const completedTest = ctx.session.curTest;
     const results = completedTest.results as Results[];
 
     for await(const result of results) {
       await this.postResultItem(ctx, result);
     }
+    ctx.session.curTest = null
     ctx.reply("Natijalaringizni yuqorida ko'rishiz mumkin.", Markup.keyboard([
       Markup.button.callback("Bosh sahifaga qaytish", "go_home")
     ]).resize());
@@ -40,12 +44,7 @@ export default class ResultsBotMiddlewares {
     const testId = Number(action_name.replace(/([a-zA-Z_])/g, "") || 0);
 
 
-    const testItem = await this.testService.findTestItem({
-      where: { id: testId },
-      relations: ["results", "results.question"]
-    });
-    const results = testItem.results as Results[];
-
+    const results = await this.resultsService.getTestResults(testId);
 
     for await(const result of results) {
       await this.postResultItem(ctx, result);

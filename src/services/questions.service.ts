@@ -33,7 +33,7 @@ class QuestionsService extends Repository<QuestionEntity> {
             .subQuery()
             .select("res.question_id")
             .from(UserEntity, "usr")
-            .innerJoin("tests", "tst", "test.user_id = usr.id")
+            .innerJoin("tests", "tst", "tst.user_id = usr.id")
             .innerJoin("results", "res", "res.test_id = tst.id")
             .where("usr.telegram_user_id = :telegram_user_id", { telegram_user_id })
             .getQuery();

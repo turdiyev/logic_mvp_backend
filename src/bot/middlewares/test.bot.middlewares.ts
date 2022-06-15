@@ -18,7 +18,7 @@ export default class BotTestAction {
       const balance = await this.userService.getUserBalanceInSOM(ctx.from.id);
 
       if (balance >= ONE_TEST_PRICE) {
-        const test = await this.testService.generateTest(ctx.from.id, 30);
+        const test = await this.testService.generateTest(ctx.from.id, 3);
 
         ctx.session.curTest = test as Tests;
         ctx.session.questionsQueue = test.results.map(r => r.question);

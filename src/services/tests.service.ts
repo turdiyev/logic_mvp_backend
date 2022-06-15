@@ -1,4 +1,4 @@
-import { EntityRepository, FindOneOptions, Repository } from "typeorm";
+import { EntityRepository, FindOneOptions, MoreThan, Repository } from "typeorm";
 import { Status, TestEntity as TestEntity } from "@entities/test.entity";
 import { HttpException } from "@exceptions/HttpException";
 import { Tests } from "@interfaces/test.interface";
@@ -25,8 +25,8 @@ class TestService extends Repository<TestEntity> {
   }
 
   public async findUserTestsByTgId(telegram_user_id: number): Promise<Tests[]> {
-    return await TestEntity.createQueryBuilder('t')
-      .select('t.*')
+    return await TestEntity.createQueryBuilder("t")
+      .select("t.*")
       .innerJoin(UserEntity, "u", "u.id = t.user_id")
       .where("u.telegram_user_id = :telegram_user_id", { telegram_user_id })
       .getRawMany<Tests>();
@@ -72,16 +72,18 @@ class TestService extends Repository<TestEntity> {
           telegram_user_id
         }
       });
-      const test = await TestEntity.findOne({ user });
+      const test = await TestEntity.findOne({ user: { id: user.id }, paid_for_test: MoreThan(0) });
 
       const createdTest = await this.createTest({
         status: Status.PENDING,
         user
       });
       const results: Results[] = [];
+
+      console.log(" is First -- ", !Boolean(test), test, user);
       if (!Boolean(test)) {
         //user's first test condition
-        const sampleQuestions = await this.questionService.getSampleQuestions(30);
+        const sampleQuestions = await this.questionService.getSampleQuestions(questionCount);
         if (sampleQuestions.length !== questionCount) throw new Error("Sample questions is not found");
 
         for await (const question of sampleQuestions) {

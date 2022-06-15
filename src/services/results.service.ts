@@ -2,9 +2,10 @@ import { EntityRepository, Repository } from "typeorm";
 import { HttpException } from "@exceptions/HttpException";
 import { Results } from "@interfaces/results.interface";
 import { isEmpty } from "@utils/util";
-import { OptionsEnum } from "@interfaces/questions.interface";
+import { OptionsEnum, Questions } from "@interfaces/questions.interface";
 import { CreateResultsDto } from "@dtos/results.dto";
 import { ResultEntity } from "@entities/result.entity";
+import { Tests } from "@interfaces/test.interface";
 
 @EntityRepository()
 class ResultsService extends Repository<ResultEntity> {
@@ -29,7 +30,7 @@ class ResultsService extends Repository<ResultEntity> {
 
       const created = await ResultEntity.create({ ...resultData }).save();
 
-      return await ResultEntity.findOne({ where: { id: created.id }, relations:['question'] });
+      return await ResultEntity.findOne({ where: { id: created.id }, relations: ["question"] });
     } catch (e) {
       console.log("ResultService: createResult --", e);
     }
@@ -43,6 +44,18 @@ class ResultsService extends Repository<ResultEntity> {
       test_id: testId,
       question_id: questionId
     }, data);
+  }
+
+  public async getTestResults(testId: number): Promise<Results[]> {
+    return await ResultEntity.find({
+      where: {
+        test: { id: testId }
+      },
+      relations: ["question"],
+      order: {
+        question_id: "DESC"
+      }
+    });
   }
 
 
