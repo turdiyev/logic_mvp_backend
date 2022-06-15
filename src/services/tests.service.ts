@@ -1,4 +1,4 @@
-import { EntityRepository, FindOneOptions, MoreThan, Repository } from "typeorm";
+import { EntityRepository, FindManyOptions, FindOneOptions, MoreThan, Repository } from "typeorm";
 import { CreateTestsDto } from "@dtos/tests.dto";
 import { Status, TestEntity as TestEntity } from "@entities/test.entity";
 import { HttpException } from "@exceptions/HttpException";
@@ -14,7 +14,7 @@ import { parseToSOM, parseToTiyin } from "@utils/paymentUtils";
 
 export interface TestWithStats extends Tests {
   stats?: { questionsCount: number; corrects: number; percentage: number };
-};
+}
 
 @EntityRepository()
 class TestService extends Repository<TestEntity> {
@@ -22,8 +22,11 @@ class TestService extends Repository<TestEntity> {
   resultService = new ResultsService();
 
   public async findAllTest(): Promise<Tests[]> {
-    const tests: Tests[] = await TestEntity.find();
-    return tests;
+    return await TestEntity.find();
+  }
+
+  public async findUserTests(userId: number): Promise<Tests[]> {
+    return await TestEntity.find({ where: { user: { id: userId } } });
   }
 
   public async findTestById(testId: number): Promise<Tests> {
@@ -69,6 +72,7 @@ class TestService extends Repository<TestEntity> {
       });
       const results: Results[] = [];
       if (!Boolean(test)) {
+        //user's first test condition
         const sampleQuestions = await this.questionService.getSampleQuestions(30);
         for await (const question of sampleQuestions) {
           const resultPayload: Results = {
@@ -93,6 +97,8 @@ class TestService extends Repository<TestEntity> {
           results.push(result);
         }
       }
+      if (results.length != questionCount) throw new Error("Questions is not found");
+
       await this.updateTest(createdTest.id, {
         paid_for_test: parseToTiyin(20000)
       });

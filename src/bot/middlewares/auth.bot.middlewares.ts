@@ -4,9 +4,8 @@ import { Markup } from "telegraf";
 import BotAuthController from "@/bot/controller/botAuth.controller";
 import { MyContext } from "@/bot/bot.interfaces";
 import { ExtraReplyMessage } from "telegraf/typings/telegram-types";
-import BotUtils from "@/bot/utils/BotUtils";
 import usersService from "@services/users.service";
-import { parseToSOMString } from "@utils/paymentUtils";
+import { toPriceFormat } from "@utils/paymentUtils";
 
 export default class AuthBotMiddlewares {
   public authController = new BotAuthController();
@@ -66,13 +65,13 @@ export default class AuthBotMiddlewares {
     return {
       message: `${getUserDisplayName(createUserData)}. ${isNewUser ? "Siz ro’yhatdan o’tdingiz." : ""} \n
 Sizning ID raqamingiz: <code>${createUserData.account_number}</code>\n
-Sizning balans: ${parseToSOMString(balance)} so’m\n
+Sizning balans: ${toPriceFormat(balance)} so’m\n
 <strong>Eslatma!</strong>
 330 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`,
       extra:
         Markup.keyboard([
           Markup.button.callback("Testni boshlash", "start_test_action"),
-          Markup.button.callback("Yechilgan teshlar", "start_test_action"),
+          Markup.button.callback("Yechilgan teshlar", "start_test_action")
         ]).oneTime().resize()
     };
   }

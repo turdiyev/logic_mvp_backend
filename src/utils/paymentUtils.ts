@@ -8,7 +8,7 @@ export function parseToSOM(priceInTiyin) {
   return Number(priceInTiyin) / ONE_TIYIN;
 }
 
-export function parseToSOMString(priceInTiyin) {
+export function parseTiyinToSOMString(priceInTiyin) {
   return toPriceFormat(parseToSOM(priceInTiyin));
 }
 
