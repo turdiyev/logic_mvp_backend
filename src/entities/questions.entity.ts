@@ -30,7 +30,7 @@ export class QuestionEntity extends BaseEntity implements IQuestions {
   @Column({ unique: true })
   public_code: string;
 
-  @Column({ unique: true })
+  @Column()
   test_code: string;
 
   @Column()

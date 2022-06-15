@@ -6,6 +6,7 @@ import payComTransactionService from "@services/paymeTransaction.service";
 import { ITransaction } from "@interfaces/transaction.interface";
 import usersService from "@services/users.service";
 import { PayMeException } from "@exceptions/PayMeException";
+import { parseToSOM, parseToTiyin } from "@utils/paymentUtils";
 
 const STATE_CREATED = 1;
 const STATE_COMPLETED = 2;
@@ -156,23 +157,25 @@ class PayComTransactionController {
   }
 
   private async cancelTransaction(req: Request, res: Response, next: NextFunction) {
-    console.log("body -- ", JSON.stringify(req.body, null, 2));
     let transaction = await this.transactionService.getByPayComTransactionId(req.body.params.id);
     if (!transaction) {
       throw new PayMeException(-31003, "Transaction not found");
     }
-    const balance = await this.usersService.getUserBalance(transaction.user);
-    console.log("______ Cancel transaction -", balance, transaction.amount, balance - (Number(transaction.amount) / 100));
-    if (balance - (Number(transaction.amount) / 100) < 0) {
+
+    const balance = await this.usersService.getUserBalanceInSOM(transaction.user);
+    if (balance - parseToSOM(transaction.amount) < 0) {
       throw new PayMeException(-31007, "This cancellation is not allowed");
     }
+
     if (transaction.state === STATE_CREATED) {
       transaction = await this.transactionService.updateItem(transaction.id, {
         state: STATE_CANCELLED,
         cancel_time: moment().valueOf(),
         reason: req.body.params.reason
       } as ITransaction);
+
     } else if (transaction.state === STATE_COMPLETED) {
+
       transaction = await this.transactionService.updateItem(transaction.id, {
         state: STATE_CANCELLED_AFTER_COMPLETE,
         cancel_time: moment().valueOf(),
@@ -237,7 +240,7 @@ class PayComTransactionController {
   }
 
   private checkIsValidAmount(amount: number) {
-    const isNotValid = amount > 50000000 || amount < 50000;
+    const isNotValid = amount > parseToTiyin(200000) || amount < parseToTiyin(500);
     if (isNotValid) {
       throw new PayMeException(-31001, "amount-out-of-range");
     }
@@ -257,11 +260,11 @@ class PayComTransactionController {
     }
   }
 
-  getUrl(host, amount) {
-    const domain = "https://checkout.paycom.uz/";
-    const encode = base64Decode(`m=${process.env.MERCHANT_ID};ac.host=${host};a=${(amount * 100)}`);
-    return `${domain}${encode}`;
-  }
+  // getUrl(host, amount) {
+  //   const domain = "https://checkout.paycom.uz/";
+  //   const encode = base64Decode(`m=${process.env.MERCHANT_ID};ac.host=${host};a=${(amount * 100)}`);
+  //   return `${domain}${encode}`;
+  // }
 
   private makeResponse(req: Request, result: any, error?: any) {
     return {

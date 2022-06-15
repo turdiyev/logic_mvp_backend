@@ -24,7 +24,7 @@ export default class AuthBotMiddlewares {
           ctx.session.currentUser = user;
         }
         if (user?.id) {
-          const balance = await this.userService.getUserBalance(user);
+          const balance = await this.userService.getUserBalanceInSOM(user);
 
           const replyContent = this.welcomeCtx(user, balance);
           await ctx.replyWithHTML(replyContent.message, replyContent.extra);
@@ -32,7 +32,7 @@ export default class AuthBotMiddlewares {
           throw new Error("User not found");
         }
       } catch (e) {
-        if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);
+        // if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);
         await ctx.reply("Prezident va al-Xorazmiy maktablarining kirish imtihonlariga tayyorgarlik testlari botiga hush kelibsiz!", Markup.keyboard([
             Markup.button.callback("Ro`yxatdan o`tish", "register_action")
           ]).resize().oneTime()
@@ -55,10 +55,10 @@ export default class AuthBotMiddlewares {
     };
     const createUserData: User = await this.authController.signInOrUp(userData);
     ctx.session.currentUser = createUserData;
-    const balance = await this.userService.getUserBalance(createUserData);
+    const balance = await this.userService.getUserBalanceInSOM(createUserData);
     const replyContent = this.welcomeCtx(createUserData, balance, true);
     ctx.replyWithHTML(replyContent.message, replyContent.extra);
-    BotUtils.answerCBQuery(ctx);
+    // BotUtils.answerCBQuery(ctx);
   };
 
   private welcomeCtx(createUserData: User, balance: number, isNewUser = false): { message: string, extra: ExtraReplyMessage } {

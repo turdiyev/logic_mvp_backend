@@ -10,6 +10,7 @@ import moment from "moment";
 import ResultsService from "@services/results.service";
 import { Results } from "@interfaces/results.interface";
 import { TypeEnum } from "@interfaces/questions.interface";
+import { parseToSOM, parseToTiyin } from "@utils/paymentUtils";
 
 export interface TestWithStats extends Tests {
   stats?: { questionsCount: number; corrects: number; percentage: number };
@@ -34,7 +35,7 @@ class TestService extends Repository<TestEntity> {
     return findTest;
   }
 
-  public async findTestItem(options:FindOneOptions<any>): Promise<Tests> {
+  public async findTestItem(options: FindOneOptions<any>): Promise<Tests> {
 
     const findTest: Tests = await TestEntity.findOne(options);
     if (!findTest) throw new HttpException(409, "You're not test");
@@ -93,7 +94,7 @@ class TestService extends Repository<TestEntity> {
         }
       }
       await this.updateTest(createdTest.id, {
-        paid_for_test: 20000 * 100
+        paid_for_test: parseToTiyin(20000)
       });
 
       return { ...createdTest, results };

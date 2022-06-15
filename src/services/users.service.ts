@@ -8,6 +8,7 @@ import { isEmpty } from "@utils/util";
 import { WhereClause } from "typeorm/query-builder/WhereClause";
 import PaymeTransactionService from "@services/paymeTransaction.service";
 import TestService from "@services/tests.service";
+import { parseToSOM } from "@utils/paymentUtils";
 
 @EntityRepository()
 class UserService extends Repository<UserEntity> {
@@ -26,11 +27,11 @@ class UserService extends Repository<UserEntity> {
     return findUser;
   }
 
-  public async getUserBalance(user: User): Promise<number> {
+  public async getUserBalanceInSOM(user: User): Promise<number> {
     const paymentsTotal = await this.transactionService.getTotalByUserId(user.id);
     const expenseTotal = await this.testService.getExpenseTotalByUserId(user.id);
-    console.log("getUserBalance - ", (user.initial_balance + paymentsTotal - expenseTotal) / 100 , user.initial_balance, paymentsTotal, expenseTotal);
-    return (user.initial_balance + paymentsTotal - expenseTotal) / 100;
+
+    return parseToSOM(user.initial_balance + paymentsTotal - expenseTotal);
   }
 
   public async findUserById(userId: number): Promise<User> {
@@ -59,9 +60,7 @@ class UserService extends Repository<UserEntity> {
     if (findUser) throw new HttpException(409, `You're email ${userData.username} already exists`);
 
     const hashedPassword = await hash(userData.password, 10);
-    const createUserData: User = await UserEntity.create({ ...userData, password: hashedPassword }).save();
-
-    return createUserData;
+    return await UserEntity.create({ ...userData, password: hashedPassword }).save();
   }
 
   public async updateUser(userId: number, userData: CreateUserDto): Promise<User> {
@@ -73,8 +72,7 @@ class UserService extends Repository<UserEntity> {
     const hashedPassword = await hash(userData.password, 10);
     await UserEntity.update(userId, { ...userData, password: hashedPassword });
 
-    const updateUser: User = await UserEntity.findOne({ where: { id: userId } });
-    return updateUser;
+    return await UserEntity.findOne({ where: { id: userId } });
   }
 
   public async deleteUser(userId: number): Promise<User> {

@@ -15,7 +15,7 @@ export default class BotTestAction {
 
   public startTest = async (ctx: MyContext, next) => {
     try {
-      const balance = await this.userService.getUserBalance(ctx.session.currentUser);
+      const balance = await this.userService.getUserBalanceInSOM(ctx.session.currentUser);
 
       if (balance >= 20000) {
         const test = await this.testService.generateTest(ctx.session.currentUser, 30);
