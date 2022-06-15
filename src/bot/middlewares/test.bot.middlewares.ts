@@ -18,8 +18,8 @@ export default class BotTestAction {
       const balance = await this.userService.getUserBalanceInSOM(ctx.from.id);
 
       if (balance >= ONE_TEST_PRICE) {
-        const test = await this.testService.generateTest(ctx.session.currentUser, 30);
-        // BotUtils.answerCBQuery(ctx, "Test boshlandi");
+        const test = await this.testService.generateTest(ctx.from.id, 30);
+
         ctx.session.curTest = test as Tests;
         ctx.session.questionsQueue = test.results.map(r => r.question);
         this.nextQuestion(ctx, next);
@@ -43,7 +43,12 @@ Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
 
     } catch (e) {
       console.log("Bot TestAction: startTest---", e);
-      ctx.replyWithHTML("👍 Tabriklaymiz. Siz hozirda bor test savollarini ishlab chiqdingiz.");
+      ctx.replyWithHTML("👍 Tabriklaymiz. Siz hozirda bor test savollarini ishlab chiqdingiz.", {
+        ...Markup.keyboard([
+          [
+            Markup.button.callback("Bosh sahifaga qaytish", "go_home")]
+        ]).oneTime().resize(true)
+      });
       BotUtils.answerCBQuery(ctx, "👍 Tabriklaymiz. Siz hozirda bor test savollarini ishlab chiqdingiz.");
     }
   };
@@ -104,7 +109,7 @@ Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
 
 <em>Javoblar</em>: <strong>${Math.round(completedTest.stats.corrects)} / ${count}</strong>
 <em>Foizda</em>: <strong>${Math.round(completedTest.stats.percentage)}%</strong>
-<em>Tugatilgan vaqt:</em> ${moment(completedTest.completedAt).format("DD.MM.YYYY, hh:mm:ss")}
+<em>Tugatilgan vaqt:</em> ${moment(completedTest.completed_at).format("DD.MM.YYYY, hh:mm:ss")}
 <em>Test raqami:</em> ${curTest.id}`, {
           // ...Markup.inlineKeyboard([
           //   Markup.button.callback("Javobini ko'rish", "open_results")

@@ -23,7 +23,7 @@ class QuestionsService extends Repository<QuestionEntity> {
     return findQuestion;
   }
 
-  public async getRandomPaidQuestion(questionNumber: number, userId: number): Promise<Questions> {
+  public async getRandomPaidQuestion(questionNumber: number, telegram_user_id: number): Promise<Questions> {
     try {
       const randomQuestion = await QuestionEntity.createQueryBuilder("q")
         .where("number = :number", { number: questionNumber })
@@ -32,9 +32,10 @@ class QuestionsService extends Repository<QuestionEntity> {
           const subQuery = qb
             .subQuery()
             .select("res.question_id")
-            .from('users', "usr")
-            .innerJoin("tests", "tst", "tst.user_id = :userId", {userId})
+            .from(UserEntity, "usr")
+            .innerJoin("tests", "tst", "test.user_id = usr.id")
             .innerJoin("results", "res", "res.test_id = tst.id")
+            .where("usr.telegram_user_id = :telegram_user_id", { telegram_user_id })
             .getQuery();
           return "q.id NOT IN " + subQuery;
         })

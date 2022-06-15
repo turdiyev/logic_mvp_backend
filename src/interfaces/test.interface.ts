@@ -6,9 +6,9 @@ export interface Tests {
   id?: number;
   name?: string;
   status: Status;
-  completedAt?: Date;
-  createdAtAt?: Date;
-  updatedAt?: Date;
+  completed_at?: Date;
+  created_at?: Date;
+  updated_at?: Date;
   user: User;
   results?: Results[];
   paid_for_test?: number;

@@ -44,11 +44,11 @@ export class UserEntity extends BaseEntity implements User {
 
   @Column()
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @Column()
   @UpdateDateColumn()
-  updatedAt: Date;
+  updated_at: Date;
 
   @Column({ default: parseToTiyin(ONE_TEST_PRICE) })
   initial_balance: number;

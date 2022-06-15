@@ -2,16 +2,12 @@ import { EntityRepository, Repository } from "typeorm";
 import { HttpException } from "@exceptions/HttpException";
 import { Results } from "@interfaces/results.interface";
 import { isEmpty } from "@utils/util";
-import QuestionsService from "@services/questions.service";
-import { OptionsEnum, Questions } from "@interfaces/questions.interface";
+import { OptionsEnum } from "@interfaces/questions.interface";
 import { CreateResultsDto } from "@dtos/results.dto";
 import { ResultEntity } from "@entities/result.entity";
-import { User } from "@interfaces/users.interface";
-import { UserEntity } from "@entities/users.entity";
 
 @EntityRepository()
 class ResultsService extends Repository<ResultEntity> {
-  questionService = new QuestionsService();
 
   public async findAllResults(): Promise<Results[]> {
     const results: Results[] = await ResultEntity.find();

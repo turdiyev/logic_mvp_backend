@@ -38,11 +38,11 @@ export class QuestionEntity extends BaseEntity implements IQuestions {
 
   @Column()
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @Column()
   @UpdateDateColumn()
-  updatedAt: Date;
+  updated_at: Date;
 
   @OneToMany(() => UserEntity, (user) => user.questions)
   user: UserEntity;

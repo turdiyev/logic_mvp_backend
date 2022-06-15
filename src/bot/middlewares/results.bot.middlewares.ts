@@ -9,21 +9,18 @@ export default class ResultsBotMiddlewares {
   public testService = new TestService();
 
   public myResults = async (ctx: MyContext, next: any) => {
-    const allTests = await this.testService.findUserTests(ctx.from.id);
+    const allTests = await this.testService.findUserTestsByTgId(ctx.from.id);
 
     const inlineButtons = [];
     allTests.forEach((test, ind) => {
       inlineButtons.push([
-        Markup.button.callback(`${ind}. ${moment(test.completedAt || test.updatedAt || test.createdAtAt)
+        Markup.button.callback(`${ind+1}. ${moment(test.completed_at || test.updated_at || test.created_at)
           .format(DATE_TIME_FORMAT)}`, `open_test_result_${test.id}`)
       ]);
     });
     await ctx.replyWithHTML(`Yechilgan testlar ${inlineButtons.length? `${inlineButtons.length} ta`: 'mavjud emas'}`, {
       parse_mode: "HTML",
-      ...Markup.inlineKeyboard(inlineButtons),
-      ...Markup.keyboard([
-        Markup.button.callback("Bosh sahifaga qaytish", "go_home")
-      ]).resize()
+      ... Markup.inlineKeyboard(inlineButtons)
     });
   };
   public openResults = async (ctx: MyContext, next: any) => {
@@ -57,6 +54,8 @@ export default class ResultsBotMiddlewares {
 
 
   public postResultItem = async (ctx: MyContext, result: Results) => {
+
+    console.log('result item -- ', result.question.number, result)
     return await ctx.replyWithPhoto({ source: `./uploads/${result.question.image}` }, {
       caption: `<strong>${result.question.number}-savol</strong>  ${result.question.public_code ? `<code>(${result.question.public_code})</code>` : ""}`,
       parse_mode: "HTML",

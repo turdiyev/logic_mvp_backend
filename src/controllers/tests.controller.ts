@@ -19,16 +19,6 @@ class TestsController {
     }
   };
 
-  public generateTest = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const findAllTestsData: QuestionEntity[] = await this.questionService.find({ where: {} });
-      // const findAllTestsData: Tests[] = await this.testService.findAllTest();
-
-      res.status(200).json({ data: findAllTestsData, message: "findAll" });
-    } catch (error) {
-      next(error);
-    }
-  };
 
   public getTestById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -55,9 +45,9 @@ class TestsController {
     try {
       const testId = Number(req.params.id);
       const testData: CreateTestsDto = req.body;
-      const updateTestData: Tests = await this.testService.updateTest(testId, testData);
+      await this.testService.updateTest(testId, testData);
 
-      res.status(200).json({ data: updateTestData, message: "updated" });
+      res.status(200).json({ data: { success: true }, message: "updated" });
     } catch (error) {
       next(error);
     }

@@ -43,11 +43,11 @@ export class TransactionEntity extends BaseEntity implements ITransaction {
 
   @Column()
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @Column()
   @UpdateDateColumn()
-  updatedAt: Date;
+  updated_at: Date;
 
   @ManyToOne(() => UserEntity, test => test.transactions)
   @JoinColumn()

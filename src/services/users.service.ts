@@ -36,14 +36,14 @@ class UserService extends Repository<UserEntity> {
     const expenseTotal = await this.testService.getExpenseTotalByUserId(user.id);
 
     const bonusBalance = Number(user.initial_balance);
-    console.log("Get user balance --- ", JSON.stringify(user), bonusBalance, user.id);
+
     return parseToSOM(bonusBalance + paymentsTotal - expenseTotal);
   }
 
   public async findUserById(userId: number): Promise<User> {
     if (isEmpty(userId)) throw new HttpException(400, "You're not userId");
 
-    const findUser: User = await UserEntity.findOne({ where: { id: userId }, relations: ["tests"] });
+    const findUser: User = await UserEntity.findOne({ where: { id: userId } });
     if (!findUser) throw new HttpException(409, "You're not user");
 
     return findUser;
@@ -51,8 +51,7 @@ class UserService extends Repository<UserEntity> {
 
   public async findUserByTgId(telegramUserId: number): Promise<User> {
     const findUser: User = await UserEntity.findOne({
-      where: { telegram_user_id: Number(telegramUserId) },
-      relations: ["tests"]
+      where: { telegram_user_id: Number(telegramUserId) }
     });
     if (!findUser) throw new HttpException(409, "You're not user");
 

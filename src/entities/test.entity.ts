@@ -25,14 +25,14 @@ export class TestEntity extends BaseEntity implements Test {
 
   @Column()
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @Column()
   @UpdateDateColumn()
-  updatedAt: Date;
+  updated_at: Date;
 
   @Column({ nullable: true })
-  completedAt: Date;
+  completed_at: Date;
 
   @ManyToOne(() => UserEntity, (user) => user.tests)
   user: UserEntity;

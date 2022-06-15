@@ -18,11 +18,8 @@ export default class AuthBotMiddlewares {
         return;
       }
       try {
-        let user = ctx.session.currentUser;
-        if (!user?.id) {
-          user = await this.userService.findUserByTgId(ctx.from.id);
-          ctx.session.currentUser = user;
-        }
+          const user = await this.userService.findUserByTgId(ctx.from.id);
+          ctx.session.curUserId = user.id;
         if (user?.id) {
           const balance = await this.userService.getUserBalanceInSOM(ctx.from.id);
 
@@ -32,7 +29,6 @@ export default class AuthBotMiddlewares {
           throw new Error("User not found");
         }
       } catch (e) {
-        // if (ctx.callbackQuery?.message?.message_id) ctx.deleteMessage(ctx.callbackQuery.message.message_id);
         await ctx.reply("Prezident va al-Xorazmiy maktablarining kirish imtihonlariga tayyorgarlik testlari botiga hush kelibsiz!", Markup.keyboard([
             Markup.button.callback("Ro`yxatdan o`tish", "register_action")
           ]).resize().oneTime()
@@ -71,10 +67,10 @@ Sizning balans: ${toPriceFormat(balance)} so’m\n
 <strong>Eslatma!</strong>
 30 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`,
       extra:
-        Markup.keyboard([
+        Markup.keyboard([[
           Markup.button.callback("Testni boshlash", "start_test_action"),
-          Markup.button.callback("Yechilgan teshlar", "start_test_action")
-        ]).oneTime().resize()
+          Markup.button.callback("Yechilgan teshlar", "my_results")
+        ]]).oneTime().resize()
     };
   }
 }

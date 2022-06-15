@@ -21,11 +21,11 @@ export class ResultEntity extends BaseEntity implements Results {
 
   @Column()
   @CreateDateColumn()
-  createdAt: Date;
+  created_at: Date;
 
   @Column()
   @UpdateDateColumn()
-  updatedAt: Date;
+  updated_at: Date;
 
   @ManyToOne(() => TestEntity, test => test.results)
   @JoinColumn({ name: "test_id" })

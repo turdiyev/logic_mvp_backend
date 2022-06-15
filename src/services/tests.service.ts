@@ -1,17 +1,15 @@
-import { EntityRepository, FindManyOptions, FindOneOptions, MoreThan, Repository } from "typeorm";
-import { CreateTestsDto } from "@dtos/tests.dto";
+import { EntityRepository, FindOneOptions, Repository } from "typeorm";
 import { Status, TestEntity as TestEntity } from "@entities/test.entity";
 import { HttpException } from "@exceptions/HttpException";
 import { Tests } from "@interfaces/test.interface";
 import { isEmpty } from "@utils/util";
 import QuestionsService from "@services/questions.service";
-import { User } from "@interfaces/users.interface";
 import moment from "moment";
 import ResultsService from "@services/results.service";
 import { Results } from "@interfaces/results.interface";
-import { TypeEnum } from "@interfaces/questions.interface";
-import { parseToSOM, parseToTiyin } from "@utils/paymentUtils";
 import { ONE_TEST_PRICE } from "@config";
+import { UserEntity } from "@entities/users.entity";
+import { parseToTiyin } from "@utils/paymentUtils";
 
 export interface TestWithStats extends Tests {
   stats?: { questionsCount: number; corrects: number; percentage: number };
@@ -26,8 +24,12 @@ class TestService extends Repository<TestEntity> {
     return await TestEntity.find();
   }
 
-  public async findUserTests(userId: number): Promise<Tests[]> {
-    return await TestEntity.find({ where: { user: { id: userId } } });
+  public async findUserTestsByTgId(telegram_user_id: number): Promise<Tests[]> {
+    return await TestEntity.createQueryBuilder('t')
+      .select('t.*')
+      .innerJoin(UserEntity, "u", "u.id = t.user_id")
+      .where("u.telegram_user_id = :telegram_user_id", { telegram_user_id })
+      .getRawMany<Tests>();
   }
 
   public async findTestById(testId: number): Promise<Tests> {
@@ -63,9 +65,14 @@ class TestService extends Repository<TestEntity> {
     return Number(userTotal || 0);
   }
 
-  public generateTest = async (user: User, questionCount = 30, type: TypeEnum = TypeEnum.PAID): Promise<Tests> => {
+  public generateTest = async (telegram_user_id: number, questionCount = 30): Promise<Tests> => {
     try {
-      const test = await TestEntity.findOne({ user: { id: user.id } });
+      const user = await UserEntity.findOne({
+        where: {
+          telegram_user_id
+        }
+      });
+      const test = await TestEntity.findOne({ user });
 
       const createdTest = await this.createTest({
         status: Status.PENDING,
@@ -88,7 +95,7 @@ class TestService extends Repository<TestEntity> {
         }
       } else {
         for await (const [ind] of [...Array(questionCount).entries()]) {
-          const question = await this.questionService.getRandomPaidQuestion(ind + 1, user.id);
+          const question = await this.questionService.getRandomPaidQuestion(ind + 1, telegram_user_id);
           if (isEmpty(question)) throw new Error("Random questions not found");
 
           const resultPayload: Results = {
@@ -116,7 +123,7 @@ class TestService extends Repository<TestEntity> {
     try {
       await TestEntity.update(testId, {
         status: Status.COMPLETED,
-        completedAt: moment().format()
+        completed_at: moment().format()
       });
       // const test = await TestEntity.findOne(testId, {
       //   relations:['questions', 'results']
