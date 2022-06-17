@@ -29,6 +29,7 @@ class TestService extends Repository<TestEntity> {
       .select("t.*")
       .innerJoin(UserEntity, "u", "u.id = t.user_id")
       .where("u.telegram_user_id = :telegram_user_id", { telegram_user_id })
+      .orderBy("t.updated_at", "ASC")
       .getRawMany<Tests>();
   }
 
