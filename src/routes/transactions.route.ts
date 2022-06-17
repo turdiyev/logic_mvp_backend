@@ -3,7 +3,7 @@ import { Routes } from "@interfaces/routes.interface";
 import PayComTransactionController from "@controllers/payComTransaction.controller";
 
 class PayComTransactionRoute implements Routes {
-  public path = "/payme";
+  public path = '/payme';
   public router = Router();
   public transactionController = new PayComTransactionController();
 

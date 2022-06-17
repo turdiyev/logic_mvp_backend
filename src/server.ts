@@ -16,8 +16,8 @@ const app = new App([
   new UsersRoute(),
   new QuestionsRoute(),
   new TestsRoute(),
-  new TransactionsRoute(),
-  new AuthRoute(),
+  // new TransactionsRoute(),
+  // new AuthRoute(),
   ]);
 
 app.listen();

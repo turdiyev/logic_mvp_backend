@@ -15,6 +15,17 @@ class UsersController {
       next(error);
     }
   };
+  public getTotalCount = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const total = await this.userService.getUsersTotal();
+
+      res.status(200).json({ data: {
+          total
+        }, message: 'findAll' });
+    } catch (error) {
+      next(error);
+    }
+  };
 
   public getUserById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

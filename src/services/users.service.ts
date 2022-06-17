@@ -20,6 +20,10 @@ class UserService extends Repository<UserEntity> {
     return users;
   }
 
+  public async getUsersTotal(): Promise<number> {
+    return await UserEntity.count();
+  }
+
   public async findUser(user: Partial<User>): Promise<User> {
     const findUser: User = await UserEntity.findOne({ where: { ...user } });
     if (!findUser) throw new HttpException(409, "You're not user");
@@ -29,7 +33,7 @@ class UserService extends Repository<UserEntity> {
 
   public async getUserBalanceInSOM(userTelegramId: number): Promise<number> {
     const user = await UserEntity.createQueryBuilder()
-      .select(['id', 'initial_balance'])
+      .select(["id", "initial_balance"])
       .where({ telegram_user_id: userTelegramId })
       .getRawOne();
     const paymentsTotal = await this.transactionService.getTotalByUserId(user.id);

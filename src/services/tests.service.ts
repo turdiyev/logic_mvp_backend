@@ -42,6 +42,17 @@ class TestService extends Repository<TestEntity> {
     return findTest;
   }
 
+  public async getTestsStat(): Promise<any> {
+
+    const completedTests = await TestEntity.count({ where: { status: Status.COMPLETED } });
+    const allTests = await TestEntity.count();
+
+    return {
+      completed: completedTests || 0,
+      all: allTests || 0
+    };
+  }
+
   public async findTestItem(options: FindOneOptions<any>): Promise<Tests> {
 
     const findTest: Tests = await TestEntity.findOne(options);

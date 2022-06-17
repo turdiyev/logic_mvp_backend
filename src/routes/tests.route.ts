@@ -5,7 +5,7 @@ import { Routes } from "@interfaces/routes.interface";
 import validationMiddleware from "@middlewares/validation.middleware";
 
 class TestsRoute implements Routes {
-  public path = "/tests";
+  public path = '/mita-api/v1/tests';
   public router = Router();
   public testsController = new TestsController();
 
@@ -15,10 +15,10 @@ class TestsRoute implements Routes {
 
   private initializeRoutes() {
     this.router.get(`${this.path}`, this.testsController.getTests);
-    this.router.get(`${this.path}/:id(\\d+)`, this.testsController.getTestById);
-    this.router.post(`${this.path}`, this.testsController.createTest);
-    this.router.put(`${this.path}/:id(\\d+)`, validationMiddleware(CreateTestsDto, "body", true), this.testsController.updateTest);
-    this.router.delete(`${this.path}/:id(\\d+)`, this.testsController.deleteTest);
+    // this.router.get(`${this.path}/:id(\\d+)`, this.testsController.getTestById);
+    // this.router.post(`${this.path}`, this.testsController.createTest);
+    // this.router.put(`${this.path}/:id(\\d+)`, validationMiddleware(CreateTestsDto, "body", true), this.testsController.updateTest);
+    // this.router.delete(`${this.path}/:id(\\d+)`, this.testsController.deleteTest);
   }
 }
 
