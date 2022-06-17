@@ -53,7 +53,7 @@ class ResultsService extends Repository<ResultEntity> {
       },
       relations: ["question"],
       order: {
-        question_id: "DESC"
+        id: "ASC"
       }
     });
   }

@@ -15,8 +15,8 @@ export default function initListeners(bot: Telegraf<MyContext>) {
   bot.hears("Testni boshlash", testActions.startTest);
   bot.hears("Bosh sahifaga qaytish", authActions.welcome);
 
-  bot.hears("Yechilgan teshlar", resultsActions.myResults);
-  bot.hears("Javobni ko'rish", resultsActions.openResults);
+  bot.hears("Yechilgan testlar", resultsActions.myResults);
+  bot.hears("Javoblarni ko'rish", resultsActions.openResults);
   bot.hears("Yangi Test", testActions.startTest);
   bot.hears(/^([ABCDabcd])$/i, testActions.nextQuestion);
 

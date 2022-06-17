@@ -12,7 +12,6 @@ export default function initActions(bot) {
   bot.action("start_test_action", testActions.startTest);
   bot.action("open_results", resultsActions.openResults);
   bot.action("open_results", resultsActions.openResults);
-  // bot.action("Javobni ko'rish", resultsActions.openResults);
 
   bot.action(/^open_test_result_(\d+)$/, resultsActions.openTestResultItem);
 }

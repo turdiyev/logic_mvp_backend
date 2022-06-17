@@ -7,6 +7,7 @@ import BotUtils from "@/bot/utils/BotUtils";
 import usersService from "@services/users.service";
 import resultsService from "@services/results.service";
 import { ONE_TEST_PRICE } from "@config";
+import { toPriceFormat } from "@utils/paymentUtils";
 
 export default class BotTestAction {
   public resultsService = new resultsService();
@@ -28,7 +29,10 @@ export default class BotTestAction {
         ctx.replyWithHTML(`<strong>Sizning hisobingizda yetarlicha mablag’ majvud emas.</strong>
 
 Yangi test yechish uchun hisobingizni to’ldiring.
+
 Sizning ID raqamingiz: <code>${user.account_number}</code>
+
+Sizning balans: ${toPriceFormat(balance)} so’m
 
 Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
 
@@ -111,15 +115,19 @@ Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
 
         ctx.replyWithHTML(`<strong>Test Yakunlandi</strong>
 
-<em>Javoblar</em>: <strong>${Math.round(completedTest.stats.corrects)} / ${count}</strong>
+Siz ${count} ta savoldan ${Math.round(completedTest.stats.corrects)} tasiga to'g'ri javob berdingiz.
+
 <em>Foizda</em>: <strong>${Math.round(completedTest.stats.percentage)}%</strong>
 <em>Tugatilgan vaqt:</em> ${moment(completedTest.completed_at).format("DD.MM.YYYY, hh:mm:ss")}
-<em>Test raqami:</em> ${curTest.id}`, {
+
+To'g'ri javoblarni ko'rish uchun qiyidagi "Javoblarni ko'rish" tugmasini bosing.`, {
+
+
           // ...Markup.inlineKeyboard([
           //   Markup.button.callback("Javobini ko'rish", "open_results")
           // ]),
           ...Markup.keyboard([
-            [Markup.button.callback("Javobni ko'rish", "open_results"),
+            [Markup.button.callback("Javoblarni ko'rish", "open_results"),
               Markup.button.callback("Bosh sahifaga qaytish", "go_home")]
           ]).oneTime().resize(true)
         });

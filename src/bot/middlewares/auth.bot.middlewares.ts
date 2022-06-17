@@ -29,7 +29,7 @@ export default class AuthBotMiddlewares {
           throw new Error("User not found");
         }
       } catch (e) {
-        await ctx.reply("Prezident va al-Xorazmiy maktablarining kirish imtihonlariga tayyorgarlik testlari botiga hush kelibsiz!", Markup.keyboard([
+        await ctx.reply("Prezident va al-Xorazmiy maktablarining kirish imtihonlariga tayyorgarlik testlari botiga xush kelibsiz!", Markup.keyboard([
             Markup.button.callback("Ro`yxatdan o`tish", "register_action")
           ]).resize().oneTime()
         );
@@ -69,7 +69,7 @@ Sizning balans: ${toPriceFormat(balance)} so’m\n
       extra:
         Markup.keyboard([[
           Markup.button.callback("Testni boshlash", "start_test_action"),
-          Markup.button.callback("Yechilgan teshlar", "my_results")
+          Markup.button.callback("Yechilgan testlar", "my_results")
         ]]).oneTime().resize()
     };
   }

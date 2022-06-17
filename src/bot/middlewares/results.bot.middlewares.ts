@@ -16,24 +16,24 @@ export default class ResultsBotMiddlewares {
     const inlineButtons = [];
     allTests.forEach((test, ind) => {
       inlineButtons.push([
-        Markup.button.callback(`${ind+1}. ${moment(test.completed_at || test.updated_at || test.created_at)
+        Markup.button.callback(`${ind + 1}. ${moment(test.completed_at || test.updated_at || test.created_at)
           .format(DATE_TIME_FORMAT)}`, `open_test_result_${test.id}`)
       ]);
     });
-    await ctx.replyWithHTML(`Yechilgan testlar ${inlineButtons.length? `${inlineButtons.length} ta`: 'mavjud emas'}`, {
+    await ctx.replyWithHTML(`Yechilgan testlar ${inlineButtons.length ? `${inlineButtons.length} ta` : "mavjud emas"}`, {
       parse_mode: "HTML",
-      ... Markup.inlineKeyboard(inlineButtons)
+      ...Markup.inlineKeyboard(inlineButtons)
     });
   };
   public openResults = async (ctx: MyContext, next: any) => {
-    console.log('open Rsult ctx - ', JSON.stringify(ctx, null, 3))
+    console.log("open Rsult ctx - ", JSON.stringify(ctx, null, 3));
     const completedTest = ctx.session.curTest;
     const results = completedTest.results as Results[];
 
     for await(const result of results) {
       await this.postResultItem(ctx, result);
     }
-    ctx.session.curTest = null
+    ctx.session.curTest = null;
     ctx.reply("Natijalaringizni yuqorida ko'rishiz mumkin.", Markup.keyboard([
       Markup.button.callback("Bosh sahifaga qaytish", "go_home")
     ]).resize());
