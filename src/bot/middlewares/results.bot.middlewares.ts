@@ -26,7 +26,6 @@ export default class ResultsBotMiddlewares {
     });
   };
   public openResults = async (ctx: MyContext, next: any) => {
-    console.log("open Rsult ctx - ", JSON.stringify(ctx, null, 3));
     const completedTest = ctx.session.curTest;
     const results = completedTest.results as Results[];
 
@@ -53,8 +52,6 @@ export default class ResultsBotMiddlewares {
 
 
   public postResultItem = async (ctx: MyContext, result: Results) => {
-
-    console.log('result item -- ', result.question.number, result)
     return await ctx.replyWithPhoto({ source: `./uploads/${result.question.image}` }, {
       caption: `<strong>${result.question.number}-savol</strong>  ${result.question.public_code ? `<code>(${result.question.public_code})</code>` : ""}`,
       parse_mode: "HTML",

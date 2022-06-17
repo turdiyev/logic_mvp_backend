@@ -63,9 +63,7 @@ export default class AuthBotMiddlewares {
     return {
       message: `${getUserDisplayName(createUserData)}. ${isNewUser ? "Siz ro’yhatdan o’tdingiz." : ""} \n
 Sizning ID raqamingiz: <code>${createUserData.account_number}</code>\n
-Sizning balans: ${toPriceFormat(balance)} so’m\n
-<strong>Eslatma!</strong>
-30 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`,
+Sizning balans: ${toPriceFormat(balance)} so’m`,
       extra:
         Markup.keyboard([[
           Markup.button.callback("Testni boshlash", "start_test_action"),
