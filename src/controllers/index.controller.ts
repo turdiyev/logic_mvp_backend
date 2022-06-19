@@ -2,8 +2,10 @@ import { NextFunction, Request, Response } from "express";
 import usersService from "@services/users.service";
 import testsService from "@services/tests.service";
 import paymeTransactionService from "@services/paymeTransaction.service";
+import questionsService from "@services/questions.service";
 
 class IndexController {
+  public questionService = new questionsService();
   public userService = new usersService();
   public testService = new testsService();
   public transactionService = new paymeTransactionService();
@@ -19,10 +21,13 @@ class IndexController {
       const usersTotal = await this.userService.getUsersTotal();
       const testsStat = await this.testService.getTestsStat();
       const transactionsTotal = await this.transactionService.getTotal();
+      const questionTotal = await this.questionService.getTotal();
+
       res.send({
         users: usersTotal || 0,
         tests: testsStat,
-        transactions: transactionsTotal || 0
+        transactions: transactionsTotal || 0,
+        questions: questionTotal || 0
       });
     } catch (error) {
       next(error);

@@ -12,6 +12,9 @@ class QuestionsService extends Repository<QuestionEntity> {
     const questions: Questions[] = await QuestionEntity.find();
     return questions;
   }
+  public async getTotal(): Promise<number> {
+    return await QuestionEntity.count();
+  }
 
 
   public async findQuestionById(questionId: number): Promise<Questions> {
