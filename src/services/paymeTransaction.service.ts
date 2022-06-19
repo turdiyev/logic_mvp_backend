@@ -9,6 +9,9 @@ class PaymeTransactionService extends Repository<ITransaction> {
   public async getList(options?: FindManyOptions<TransactionEntity>): Promise<ITransaction[]> {
     return await TransactionEntity.find(options);
   }
+  public async getTotal(options?: FindManyOptions<TransactionEntity>): Promise<number> {
+    return await TransactionEntity.count();
+  }
 
   public async getById(id: number): Promise<ITransaction> {
     if (isEmpty(id)) throw new HttpException(400, "You're not id");

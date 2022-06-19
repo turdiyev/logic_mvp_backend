@@ -30,9 +30,9 @@ export default class BotTestAction {
 
 Yangi test yechish uchun hisobingizni to’ldiring.
 
-Sizning ID raqamingiz: <code>${user.account_number}</code>
+Hisob raqamingiz: <code>${user.account_number}</code>
 
-Sizning balans: ${toPriceFormat(balance)} so’m
+Balansingiz: ${toPriceFormat(balance)} so’m
 
 Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
 

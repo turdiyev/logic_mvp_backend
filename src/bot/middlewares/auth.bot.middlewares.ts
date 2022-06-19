@@ -62,8 +62,8 @@ export default class AuthBotMiddlewares {
   private welcomeCtx(createUserData: User, balance: number, isNewUser = false): { message: string, extra: ExtraReplyMessage } {
     return {
       message: `${getUserDisplayName(createUserData)}. ${isNewUser ? "Siz ro’yhatdan o’tdingiz." : ""} \n
-Sizning ID raqamingiz: <code>${createUserData.account_number}</code>\n
-Sizning balans: ${toPriceFormat(balance)} so’m`,
+Hisob raqamingiz: <code>${createUserData.account_number}</code>\n
+Balansingiz: ${toPriceFormat(balance)} so’m`,
       extra:
         Markup.keyboard([[
           Markup.button.callback("Testni boshlash", "start_test_action"),
