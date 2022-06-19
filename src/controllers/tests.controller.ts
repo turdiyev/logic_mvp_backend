@@ -9,6 +9,16 @@ class TestsController {
   public testService = new testService();
   public questionService = new questionsService();
 
+  public getTestsWithResults = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const findAllTestsData: Tests[] = await this.testService.findTestsWithResults();
+
+      res.status(200).json({ data: findAllTestsData, message: "findAll" });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public getTests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const findAllTestsData: Tests[] = await this.testService.findAllTest();

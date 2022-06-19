@@ -9,7 +9,6 @@ import {
 } from "typeorm";
 import { OptionsEnum, Questions as IQuestions, TypeEnum } from "@interfaces/questions.interface";
 import { UserEntity } from "@entities/users.entity";
-import { TestEntity } from "@entities/test.entity";
 import { ResultEntity } from "@entities/result.entity";
 
 @Entity("questions")

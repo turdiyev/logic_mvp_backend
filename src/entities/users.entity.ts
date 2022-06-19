@@ -39,7 +39,7 @@ export class UserEntity extends BaseEntity implements User {
   @Column()
   username: string;
 
-  @Column({ default: "Test_2@22" })
+  @Column({ default: "Test_2@22", select: false })
   password: string;
 
   @Column()

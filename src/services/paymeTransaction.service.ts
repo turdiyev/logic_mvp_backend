@@ -9,8 +9,8 @@ class PaymeTransactionService extends Repository<ITransaction> {
   public async getList(options?: FindManyOptions<TransactionEntity>): Promise<ITransaction[]> {
     return await TransactionEntity.find(options);
   }
-  public async getTotal(options?: FindManyOptions<TransactionEntity>): Promise<number> {
-    return await TransactionEntity.count();
+  public async getTotal(): Promise<number> {
+    return await TransactionEntity.count({where:{state:2}});
   }
 
   public async getById(id: number): Promise<ITransaction> {

@@ -5,13 +5,23 @@ import { isEmpty } from "@utils/util";
 import { OptionsEnum, Questions } from "@interfaces/questions.interface";
 import { CreateResultsDto } from "@dtos/results.dto";
 import { ResultEntity } from "@entities/result.entity";
-import { Tests } from "@interfaces/test.interface";
 
 @EntityRepository()
 class ResultsService extends Repository<ResultEntity> {
+  public async getAllResults(): Promise<any[]> {
+    const results = await ResultEntity.createQueryBuilder("r")
+      .select([
+        "t.*",
+        "jsonb_build_object('first_name', u.first_name,'last_name', u.last_name,'username', u.username, 'id', u.id) as user",
+        "json_agg(jsonb_build_object('question_id', q.id,'result_id', r.id,'correct', q.correct_answer, 'selected', r.selected_option)) as results"
 
-  public async findAllResults(): Promise<Results[]> {
-    const results: Results[] = await ResultEntity.find();
+      ])
+      .innerJoin("tests", "t", "t.id = r.test_id")
+      .innerJoin("questions", "q", "q.id = r.question_id")
+      .innerJoin("users", "u", "u.id = t.user_id")
+      .groupBy("t.id")
+      .addGroupBy("u.id")
+      .getRawMany();
     return results;
   }
 

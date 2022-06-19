@@ -10,6 +10,7 @@ import { Results } from "@interfaces/results.interface";
 import { ONE_TEST_PRICE } from "@config";
 import { UserEntity } from "@entities/users.entity";
 import { parseToTiyin } from "@utils/paymentUtils";
+import { ResultEntity } from "@entities/result.entity";
 
 export interface TestWithStats extends Tests {
   stats?: { questionsCount: number; corrects: number; percentage: number };
@@ -19,6 +20,23 @@ export interface TestWithStats extends Tests {
 class TestService extends Repository<TestEntity> {
   questionService = new QuestionsService();
   resultService = new ResultsService();
+
+  public async findTestsWithResults(): Promise<Tests[]> {
+    const results = await TestEntity.createQueryBuilder("t")
+      .select([
+        "t.*",
+        "jsonb_build_object('first_name', u.first_name,'last_name', u.last_name,'username', u.username, 'id', u.id) as user",
+        "json_agg(jsonb_build_object('number', q.number,'question_id', q.id,'result_id', r.id,'correct', q.correct_answer, 'selected', r.selected_option)) as results"
+      ])
+      .innerJoin("results", "r", "r.test_id = t.id")
+      .innerJoin("questions", "q", "q.id = r.question_id")
+      .innerJoin("users", "u", "u.id = t.user_id")
+      .groupBy("t.id")
+      .addGroupBy("u.id")
+      .getRawMany<Tests>();
+
+    return results
+  }
 
   public async findAllTest(): Promise<Tests[]> {
     return await TestEntity.find();

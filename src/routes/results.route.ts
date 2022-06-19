@@ -1,20 +1,18 @@
 import { Router } from "express";
-import TestsController from "@controllers/tests.controller";
-import { CreateTestsDto } from "@dtos/tests.dto";
 import { Routes } from "@interfaces/routes.interface";
-import validationMiddleware from "@middlewares/validation.middleware";
+import ResultsController from "@controllers/results.controller";
 
-class TestsRoute implements Routes {
-  public path = '/mita-api/v1/tests';
+class ResultsRoute implements Routes {
+  public path = '/mita-api/v1/results';
   public router = Router();
-  public testsController = new TestsController();
+  public resultController = new ResultsController();
 
   constructor() {
     this.initializeRoutes();
   }
 
   private initializeRoutes() {
-    this.router.get(`${this.path}`, this.testsController.getTestsWithResults);
+    this.router.get(`${this.path}`, this.resultController.getAll);
     // this.router.get(`${this.path}/:id(\\d+)`, this.testsController.getTestById);
     // this.router.post(`${this.path}`, this.testsController.createTest);
     // this.router.put(`${this.path}/:id(\\d+)`, validationMiddleware(CreateTestsDto, "body", true), this.testsController.updateTest);
@@ -22,4 +20,4 @@ class TestsRoute implements Routes {
   }
 }
 
-export default TestsRoute;
+export default ResultsRoute;
