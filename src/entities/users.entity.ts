@@ -53,7 +53,7 @@ export class UserEntity extends BaseEntity implements User {
   @Column({ default: parseToTiyin(ONE_TEST_PRICE) })
   initial_balance: number;
 
-  @Column({ type: "json", nullable: true })
+  @Column({ type: "json", nullable: true, select:false })
   json_data: string | object;
 
   @OneToMany(() => QuestionEntity, question => question.user)

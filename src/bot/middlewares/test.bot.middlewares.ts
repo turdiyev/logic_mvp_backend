@@ -26,25 +26,24 @@ export default class BotTestAction {
         this.nextQuestion(ctx, next);
       } else {
         const user = await this.userService.findUserByTgId(ctx.from.id);
-        ctx.replyWithHTML(`<strong>Sizning hisobingizda yetarlicha mablag’ majvud emas.</strong>
-
-Yangi test yechish uchun hisobingizni to’ldiring.
+        ctx.replyWithHTML(`<strong>Hisobingizda yetarlicha mablag’ majvud emas.</strong>
 
 Hisob raqamingiz: <code>${user.account_number}</code>
 
 Balansingiz: ${toPriceFormat(balance)} so’m
 
-Hisobingizni to’ldirgandan keyin testni boshlash tugmasini bosing.
-
+Eslatma:
+<em>1 ta test (30 savol) - 20 000 so’m</em>
 <a href="https://telegra.ph/Hisobni-toldirish-06-15">Hisobni qanday to'ldirish mumkin?</a>
-
-<strong>Eslatma!</strong>
-30 ta savoldan iborat 1 ta test variantini yechish narxi 20 000 so’m`, {
+`, {
           disable_web_page_preview: true,
 
           ...Markup.keyboard([
-            [Markup.button.callback("Testni boshlash", "start_test_action"),
-              Markup.button.callback("Bosh sahifaga qaytish", "go_home")]
+            [
+              Markup.button.callback("Testni boshlash", "start_test_action"),
+              Markup.button.callback("Nimaga pulli?", "why_paid"),
+              Markup.button.callback("Bosh sahifaga qaytish", "go_home")
+            ]
           ]).oneTime().resize(true)
         });
       }
@@ -138,5 +137,29 @@ To'g'ri javoblarni ko'rish uchun qiyidagi "Javoblarni ko'rish" tugmasini bosing.
     }
   };
 
+
+  public postWhyPaid = async (ctx: MyContext) => {
+    ctx.replyWithHTML(`<strong>Nimaga test pullik?</strong>
+
+- Har bir savol-javobni qadrini, hayotga asqotishini bildirish uchun;
+
+- 2kg shakarga talashmaydigan kelajakni qurish uchun;
+
+- Ota-onalarni farzandi ta'limiga e'tiborini isbotlash uchun;
+
+- Testlarni sifatli qilib interaktiv tayyorlash uchun;
+
+- Har bir testga javobni maqola va video shaklida darslik qilish uchun;
+
+- Dasturni bolalarga qulayroq qilib takomillashtirish uchun;
+`, {
+      disable_web_page_preview: true,
+
+      ...Markup.keyboard([
+        [Markup.button.callback("Testni boshlash", "start_test_action"),
+          Markup.button.callback("Bosh sahifaga qaytish", "go_home")]
+      ]).oneTime().resize(true)
+    });
+  };
 
 }
