@@ -41,7 +41,7 @@ Eslatma:
           ...Markup.keyboard([
             [
               Markup.button.callback("Testni boshlash", "start_test_action"),
-              Markup.button.callback("Nimaga pulli?", "why_paid"),
+              Markup.button.callback("Nega testlar pullik?", "why_paid"),
               Markup.button.callback("Bosh sahifaga qaytish", "go_home")
             ]
           ]).oneTime().resize(true)
@@ -139,11 +139,9 @@ To'g'ri javoblarni ko'rish uchun qiyidagi "Javoblarni ko'rish" tugmasini bosing.
 
 
   public postWhyPaid = async (ctx: MyContext) => {
-    ctx.replyWithHTML(`<strong>Nimaga test pullik?</strong>
+    ctx.replyWithHTML(`<strong>Nega testlar pullik?</strong>
 
 - Har bir savol-javobni qadrini, hayotga asqotishini bildirish uchun;
-
-- 2kg shakarga talashmaydigan kelajakni qurish uchun;
 
 - Ota-onalarni farzandi ta'limiga e'tiborini isbotlash uchun;
 
