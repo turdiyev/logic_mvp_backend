@@ -12,7 +12,7 @@ class PayComTransactionRoute implements Routes {
   }
 
   private initializeRoutes() {
-    this.router.post(`${this.path}`, this.transactionController.index);
+    // this.router.post(`${this.path}`, this.transactionController.index);
   }
 }
 

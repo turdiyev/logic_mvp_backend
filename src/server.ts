@@ -18,7 +18,7 @@ const app = new App([
   // new ResultsRoute(),
   // new QuestionsRoute(),
   new TestsRoute(),
-  // new TransactionsRoute(),
+  new TransactionsRoute(),
   // new AuthRoute(),
   ]);
 
