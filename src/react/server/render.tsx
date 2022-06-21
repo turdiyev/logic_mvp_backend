@@ -8,6 +8,7 @@ export function renderComp(data: any = {}) {
   const html = `
         <html lang="en" class="dark">
         <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <link href="/output.css" rel="stylesheet">
             <script>
               window.INITIAL_DATA = ${JSON.stringify(data)}

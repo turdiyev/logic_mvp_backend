@@ -37,6 +37,7 @@ class App {
         // enable Express.js middleware tracing
         new Tracing.Integrations.Express({ app: this.app })
       ],
+      environment: NODE_ENV,
 
       // Set tracesSampleRate to 1.0 to capture 100%
       // of transactions for performance monitoring.
