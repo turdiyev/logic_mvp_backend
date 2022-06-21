@@ -10,9 +10,9 @@ export function renderComp(data: any = {}) {
         <head>
         <meta name="viewport" content="width=device-width, initial-scale=1"/>
         <link href="/output.css" rel="stylesheet">
-            <script>
+           <!-- <script>
               window.INITIAL_DATA = ${JSON.stringify(data)}
-            </script>
+            </script>-->
             
         </head>
         <body class="dark:bg-gray-900">

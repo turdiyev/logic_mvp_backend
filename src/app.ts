@@ -14,6 +14,8 @@ import { dbConnection } from "@databases";
 import { Routes } from "@interfaces/routes.interface";
 import errorMiddleware from "@middlewares/error.middleware";
 import { logger, stream } from "@utils/logger";
+
+import {pagination} from 'typeorm-pagination'
 import * as Sentry from "@sentry/node";
 import * as Tracing from "@sentry/tracing";
 

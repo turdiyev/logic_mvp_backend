@@ -2,6 +2,7 @@ import { config } from "dotenv";
 
 config({ path: `.env.${process.env.NODE_ENV || "development"}.local` });
 
+export const PAGE_LIMIT = 15; // One test price
 export const ONE_TEST_PRICE = 20000; // One test price
 export const DATE_FORMAT = "DD.MM.YYYY";
 export const DATE_TIME_FORMAT = "DD.MM.YYYY HH:mm:ss";
