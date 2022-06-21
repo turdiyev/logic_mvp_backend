@@ -1,8 +1,11 @@
 import { NextFunction, Request, Response } from "express";
+import React from "react";
+
 import usersService from "@services/users.service";
 import testsService from "@services/tests.service";
 import paymeTransactionService from "@services/paymeTransaction.service";
 import questionsService from "@services/questions.service";
+import { renderComp } from "../views/server/render";
 
 class IndexController {
   public questionService = new questionsService();
@@ -11,7 +14,8 @@ class IndexController {
   public transactionService = new paymeTransactionService();
   public index = (req: Request, res: Response, next: NextFunction): void => {
     try {
-      res.send({ hie: 324324 });
+     const html = renderComp()
+      res.send(html);
     } catch (error) {
       next(error);
     }
