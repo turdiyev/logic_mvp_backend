@@ -4,7 +4,7 @@ import { Tests } from '@interfaces/test.interface';
 import testService from '@services/tests.service';
 import questionsService from '@services/questions.service';
 import { QuestionEntity } from '@entities/questions.entity';
-import { renderComp } from '../views/server/render';
+import { renderComp } from '../react/server/render';
 
 class TestsController {
   public testService = new testService();

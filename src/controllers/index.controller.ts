@@ -5,7 +5,7 @@ import usersService from "@services/users.service";
 import testsService from "@services/tests.service";
 import paymeTransactionService from "@services/paymeTransaction.service";
 import questionsService from "@services/questions.service";
-import { renderComp } from "../views/server/render";
+import { renderComp } from "../react/server/render";
 
 class IndexController {
   public questionService = new questionsService();
